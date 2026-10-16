@@ -21,7 +21,7 @@ class MainActivity : ComponentActivity() {
             NritahubTheme {
                 Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
                     Greeting(
-                        name = "Android",
+                        name = "Sanjana",
                         modifier = Modifier.padding(innerPadding)
                     )
                 }
@@ -42,6 +42,6 @@ fun Greeting(name: String, modifier: Modifier = Modifier) {
 @Composable
 fun GreetingPreview() {
     NritahubTheme {
-        Greeting("Android")
+        Greeting("Sanjana")
     }
 }
