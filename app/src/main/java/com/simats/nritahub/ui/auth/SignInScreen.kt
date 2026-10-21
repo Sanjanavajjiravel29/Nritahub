@@ -255,19 +255,12 @@ fun SignInContent(
             Spacer(modifier = Modifier.height(20.dp))
 
             // Academy & Role Context Label
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = uiState.academyAndRole,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = DeepPlum
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                // Red Accent Dot
-                Canvas(modifier = Modifier.size(8.dp)) {
-                    drawCircle(color = Color(0xFFD32F2F), radius = size.width / 2)
-                }
-            }
+            Text(
+                text = uiState.academyAndRole,
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = DeepPlum
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 

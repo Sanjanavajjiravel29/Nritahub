@@ -211,19 +211,13 @@ fun CreateAccountContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Subtitle + Red Dot
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = uiState.subtitle,
-                    fontSize = 13.sp,
-                    color = MutedBodyText,
-                    modifier = Modifier.weight(1f)
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Canvas(modifier = Modifier.size(8.dp)) {
-                    drawCircle(color = Color(0xFFD32F2F), radius = size.width / 2)
-                }
-            }
+            // Subtitle
+            Text(
+                text = uiState.subtitle,
+                fontSize = 13.sp,
+                color = MutedBodyText,
+                modifier = Modifier.fillMaxWidth()
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 

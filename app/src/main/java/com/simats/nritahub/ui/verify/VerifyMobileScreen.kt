@@ -180,19 +180,13 @@ fun VerifyMobileContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Title with Red Accent Dot above/left
-            Column {
-                Canvas(modifier = Modifier.size(8.dp)) {
-                    drawCircle(color = Color(0xFFD32F2F), radius = size.width / 2)
-                }
-                Spacer(modifier = Modifier.height(4.dp))
-                Text(
-                    text = uiState.title,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 32.sp,
-                    color = DarkMaroonText
-                )
-            }
+            // Title
+            Text(
+                text = uiState.title,
+                fontFamily = FontFamily.Serif,
+                fontSize = 32.sp,
+                color = DarkMaroonText
+            )
 
             Spacer(modifier = Modifier.height(16.dp))
 

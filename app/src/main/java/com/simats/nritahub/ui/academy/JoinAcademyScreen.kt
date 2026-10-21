@@ -174,28 +174,13 @@ fun JoinAcademyContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Title: "Find your" + Red Dot + "place"
-            Row(verticalAlignment = Alignment.CenterVertically) {
-                Text(
-                    text = uiState.titlePrefix,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 32.sp,
-                    color = DarkMaroonText
-                )
-                Text(
-                    text = " . ",
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 32.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = Color(0xFFD32F2F) // Accent Red Dot
-                )
-                Text(
-                    text = uiState.titleSuffix,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 32.sp,
-                    color = DarkMaroonText
-                )
-            }
+            // Title: "Find your place"
+            Text(
+                text = "${uiState.titlePrefix} ${uiState.titleSuffix}",
+                fontFamily = FontFamily.Serif,
+                fontSize = 32.sp,
+                color = DarkMaroonText
+            )
 
             Spacer(modifier = Modifier.height(8.dp))
 
