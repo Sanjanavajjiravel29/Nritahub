@@ -15,6 +15,7 @@ import com.simats.nritahub.ui.home.HomeScreen
 import com.simats.nritahub.ui.home.StudentHomeScreen
 import com.simats.nritahub.ui.profile.StudentProfileScreen
 import com.simats.nritahub.ui.register.CreateAccountScreen
+import com.simats.nritahub.ui.schedule.ClassScheduleScreen
 import com.simats.nritahub.ui.splash.SplashScreen
 import com.simats.nritahub.ui.theme.NritahubTheme
 import com.simats.nritahub.ui.verify.VerifyMobileScreen
@@ -27,6 +28,7 @@ enum class Screen {
     VerifyMobile,
     StudentProfile,
     StudentHome,
+    ClassSchedule,
     Home
 }
 
@@ -44,8 +46,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NrityaHubApp() {
-    // Set to Screen.StudentHome so it launches immediately on device
-    var currentScreen by remember { mutableStateOf(Screen.StudentHome) }
+    // Set to Screen.ClassSchedule so it launches immediately on device
+    var currentScreen by remember { mutableStateOf(Screen.ClassSchedule) }
 
     when (currentScreen) {
         Screen.Splash -> {
@@ -91,9 +93,15 @@ fun NrityaHubApp() {
         }
         Screen.StudentHome -> {
             StudentHomeScreen(
-                onNavigateToClassDetails = { currentScreen = Screen.Home },
+                onNavigateToClassDetails = { currentScreen = Screen.ClassSchedule },
                 onNavigateToSadhana = { currentScreen = Screen.Home },
                 onNavigateToEvents = { currentScreen = Screen.Home }
+            )
+        }
+        Screen.ClassSchedule -> {
+            ClassScheduleScreen(
+                onNavigateToHome = { currentScreen = Screen.StudentHome },
+                onNavigateToClassDetail = { currentScreen = Screen.Home }
             )
         }
         Screen.Home -> {
