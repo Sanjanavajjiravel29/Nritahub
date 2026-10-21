@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import com.simats.nritahub.ui.academy.JoinAcademyScreen
 import com.simats.nritahub.ui.auth.SignInScreen
 import com.simats.nritahub.ui.home.HomeScreen
+import com.simats.nritahub.ui.home.StudentHomeScreen
 import com.simats.nritahub.ui.profile.StudentProfileScreen
 import com.simats.nritahub.ui.register.CreateAccountScreen
 import com.simats.nritahub.ui.splash.SplashScreen
@@ -25,6 +26,7 @@ enum class Screen {
     CreateAccount,
     VerifyMobile,
     StudentProfile,
+    StudentHome,
     Home
 }
 
@@ -42,8 +44,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NrityaHubApp() {
-    // Set to Screen.StudentProfile so it launches immediately on device
-    var currentScreen by remember { mutableStateOf(Screen.StudentProfile) }
+    // Set to Screen.StudentHome so it launches immediately on device
+    var currentScreen by remember { mutableStateOf(Screen.StudentHome) }
 
     when (currentScreen) {
         Screen.Splash -> {
@@ -63,7 +65,7 @@ fun NrityaHubApp() {
         Screen.SignIn -> {
             SignInScreen(
                 onBackToPrevious = { currentScreen = Screen.Splash },
-                onSignInSuccess = { currentScreen = Screen.Home },
+                onSignInSuccess = { currentScreen = Screen.StudentHome },
                 onCreateAccountClicked = { currentScreen = Screen.CreateAccount }
             )
         }
@@ -84,12 +86,19 @@ fun NrityaHubApp() {
         Screen.StudentProfile -> {
             StudentProfileScreen(
                 onBackToPrevious = { currentScreen = Screen.VerifyMobile },
-                onSaveProfileSuccess = { currentScreen = Screen.Home }
+                onSaveProfileSuccess = { currentScreen = Screen.StudentHome }
+            )
+        }
+        Screen.StudentHome -> {
+            StudentHomeScreen(
+                onNavigateToClassDetails = { currentScreen = Screen.Home },
+                onNavigateToSadhana = { currentScreen = Screen.Home },
+                onNavigateToEvents = { currentScreen = Screen.Home }
             )
         }
         Screen.Home -> {
             HomeScreen(
-                onBackToSplash = { currentScreen = Screen.Splash }
+                onBackToSplash = { currentScreen = Screen.StudentHome }
             )
         }
     }
