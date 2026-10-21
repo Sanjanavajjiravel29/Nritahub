@@ -4,14 +4,21 @@ import android.os.Bundle
 import androidx.activity.ComponentActivity
 import androidx.activity.compose.setContent
 import androidx.activity.enableEdgeToEdge
-import androidx.compose.foundation.layout.fillMaxSize
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material3.Scaffold
-import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.tooling.preview.Preview
+import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
+import androidx.compose.runtime.setValue
+import com.simats.nritahub.ui.auth.SignInScreen
+import com.simats.nritahub.ui.home.HomeScreen
+import com.simats.nritahub.ui.splash.SplashScreen
 import com.simats.nritahub.ui.theme.NritahubTheme
+
+enum class Screen {
+    Splash,
+    Home,
+    SignIn
+}
 
 class MainActivity : ComponentActivity() {
     override fun onCreate(savedInstanceState: Bundle?) {
@@ -19,29 +26,33 @@ class MainActivity : ComponentActivity() {
         enableEdgeToEdge()
         setContent {
             NritahubTheme {
-                Scaffold(modifier = Modifier.fillMaxSize()) { innerPadding ->
-                    Greeting(
-                        name = "Sanjana",
-                        modifier = Modifier.padding(innerPadding)
-                    )
-                }
+                NrityaHubApp()
             }
         }
     }
 }
 
 @Composable
-fun Greeting(name: String, modifier: Modifier = Modifier) {
-    Text(
-        text = "Hello $name!",
-        modifier = modifier
-    )
-}
+fun NrityaHubApp() {
+    var currentScreen by remember { mutableStateOf(Screen.Splash) }
 
-@Preview(showBackground = true)
-@Composable
-fun GreetingPreview() {
-    NritahubTheme {
-        Greeting("Sanjana")
+    when (currentScreen) {
+        Screen.Splash -> {
+            SplashScreen(
+                onNavigateToHome = { currentScreen = Screen.Home },
+                onNavigateToSignIn = { currentScreen = Screen.SignIn }
+            )
+        }
+        Screen.Home -> {
+            HomeScreen(
+                onBackToSplash = { currentScreen = Screen.Splash }
+            )
+        }
+        Screen.SignIn -> {
+            SignInScreen(
+                onBackToSplash = { currentScreen = Screen.Splash },
+                onSignInSuccess = { currentScreen = Screen.Home }
+            )
+        }
     }
 }
