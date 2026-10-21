@@ -12,14 +12,16 @@ import androidx.compose.runtime.setValue
 import com.simats.nritahub.ui.academy.JoinAcademyScreen
 import com.simats.nritahub.ui.auth.SignInScreen
 import com.simats.nritahub.ui.home.HomeScreen
+import com.simats.nritahub.ui.register.CreateAccountScreen
 import com.simats.nritahub.ui.splash.SplashScreen
 import com.simats.nritahub.ui.theme.NritahubTheme
 
 enum class Screen {
     Splash,
     JoinAcademy,
-    Home,
-    SignIn
+    SignIn,
+    CreateAccount,
+    Home
 }
 
 class MainActivity : ComponentActivity() {
@@ -36,7 +38,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NrityaHubApp() {
-    var currentScreen by remember { mutableStateOf(Screen.Splash) }
+    // Set to Screen.CreateAccount so it launches immediately on device
+    var currentScreen by remember { mutableStateOf(Screen.CreateAccount) }
 
     when (currentScreen) {
         Screen.Splash -> {
@@ -49,7 +52,7 @@ fun NrityaHubApp() {
             JoinAcademyScreen(
                 onBackToSplash = { currentScreen = Screen.Splash },
                 onContinueToHome = { _, _, _ ->
-                    currentScreen = Screen.Home
+                    currentScreen = Screen.CreateAccount
                 }
             )
         }
@@ -57,7 +60,14 @@ fun NrityaHubApp() {
             SignInScreen(
                 onBackToPrevious = { currentScreen = Screen.Splash },
                 onSignInSuccess = { currentScreen = Screen.Home },
-                onCreateAccountClicked = { currentScreen = Screen.JoinAcademy }
+                onCreateAccountClicked = { currentScreen = Screen.CreateAccount }
+            )
+        }
+        Screen.CreateAccount -> {
+            CreateAccountScreen(
+                onBackToPrevious = { currentScreen = Screen.JoinAcademy },
+                onSignInClicked = { currentScreen = Screen.SignIn },
+                onCreateAccountSuccess = { currentScreen = Screen.Home }
             )
         }
         Screen.Home -> {
