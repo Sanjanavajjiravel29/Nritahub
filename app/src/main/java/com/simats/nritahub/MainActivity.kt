@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import com.simats.nritahub.ui.academy.JoinAcademyScreen
 import com.simats.nritahub.ui.auth.SignInScreen
 import com.simats.nritahub.ui.home.HomeScreen
+import com.simats.nritahub.ui.profile.StudentProfileScreen
 import com.simats.nritahub.ui.register.CreateAccountScreen
 import com.simats.nritahub.ui.splash.SplashScreen
 import com.simats.nritahub.ui.theme.NritahubTheme
@@ -23,6 +24,7 @@ enum class Screen {
     SignIn,
     CreateAccount,
     VerifyMobile,
+    StudentProfile,
     Home
 }
 
@@ -40,8 +42,8 @@ class MainActivity : ComponentActivity() {
 
 @Composable
 fun NrityaHubApp() {
-    // Set to Screen.VerifyMobile so it launches immediately on device
-    var currentScreen by remember { mutableStateOf(Screen.VerifyMobile) }
+    // Set to Screen.StudentProfile so it launches immediately on device
+    var currentScreen by remember { mutableStateOf(Screen.StudentProfile) }
 
     when (currentScreen) {
         Screen.Splash -> {
@@ -76,7 +78,13 @@ fun NrityaHubApp() {
             VerifyMobileScreen(
                 onBackToPrevious = { currentScreen = Screen.CreateAccount },
                 onChangeMobileClicked = { currentScreen = Screen.CreateAccount },
-                onVerifySuccess = { currentScreen = Screen.Home }
+                onVerifySuccess = { currentScreen = Screen.StudentProfile }
+            )
+        }
+        Screen.StudentProfile -> {
+            StudentProfileScreen(
+                onBackToPrevious = { currentScreen = Screen.VerifyMobile },
+                onSaveProfileSuccess = { currentScreen = Screen.Home }
             )
         }
         Screen.Home -> {
