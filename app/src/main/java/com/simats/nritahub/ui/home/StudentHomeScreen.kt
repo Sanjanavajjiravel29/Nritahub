@@ -48,7 +48,6 @@ import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -68,7 +67,13 @@ fun StudentHomeScreen(
     viewModel: StudentHomeViewModel = remember { StudentHomeViewModel() },
     onNavigateToClassDetails: () -> Unit,
     onNavigateToSadhana: () -> Unit,
-    onNavigateToEvents: () -> Unit
+    onNavigateToEvents: () -> Unit,
+    onNavigateToNotifications: () -> Unit = {},
+    onNavigateToFees: () -> Unit = {},
+    onNavigateToSchedule: () -> Unit = {},
+    onNavigateToPractice: () -> Unit = {},
+    onNavigateToProgress: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -87,6 +92,7 @@ fun StudentHomeScreen(
                 viewModel.onNavigationHandled()
             }
             StudentHomeNavigationEvent.NotificationsClicked -> {
+                onNavigateToNotifications()
                 viewModel.onNavigationHandled()
             }
             StudentHomeNavigationEvent.None -> {}
@@ -95,11 +101,20 @@ fun StudentHomeScreen(
 
     StudentHomeContent(
         uiState = uiState,
-        onTabSelect = viewModel::onTabSelected,
+        onTabSelect = { tab ->
+            when (tab) {
+                HomeTab.HOME -> viewModel.onTabSelected(tab)
+                HomeTab.SCHEDULE -> onNavigateToSchedule()
+                HomeTab.PRACTICE -> onNavigateToPractice()
+                HomeTab.PROGRESS -> onNavigateToProgress()
+                HomeTab.PROFILE -> onNavigateToProfile()
+            }
+        },
         onViewClassDetailsClick = viewModel::onViewClassDetailsClicked,
         onOpenSadhanaClick = viewModel::onOpenSadhanaClicked,
         onExploreEventsClick = viewModel::onExploreEventsClicked,
-        onNotificationsClick = viewModel::onNotificationsClicked
+        onNotificationsClick = viewModel::onNotificationsClicked,
+        onFeesClick = onNavigateToFees
     )
 }
 
@@ -110,7 +125,8 @@ fun StudentHomeContent(
     onViewClassDetailsClick: () -> Unit,
     onOpenSadhanaClick: () -> Unit,
     onExploreEventsClick: () -> Unit,
-    onNotificationsClick: () -> Unit
+    onNotificationsClick: () -> Unit,
+    onFeesClick: () -> Unit
 ) {
     Scaffold(
         containerColor = CreamBackground
@@ -365,6 +381,80 @@ fun StudentHomeContent(
                                 drawLine(color = Color.White, start = Offset(w * 0.6f, h * 0.8f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
                             }
                         }
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(16.dp))
+
+            // Fee Details & Invoices Quick Action Card
+            Card(
+                shape = RoundedCornerShape(18.dp),
+                colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onFeesClick() }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(16.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(36.dp)
+                                .clip(CircleShape)
+                                .background(CardBackground),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            // Invoice / Receipt Icon
+                            Canvas(modifier = Modifier.size(18.dp)) {
+                                val w = size.width
+                                val h = size.height
+                                drawPath(
+                                    path = Path().apply {
+                                        addRoundRect(
+                                            RoundRect(
+                                                rect = Rect(0f, h * 0.1f, w, h * 0.9f),
+                                                cornerRadius = CornerRadius(4f, 4f)
+                                            )
+                                        )
+                                    },
+                                    color = DeepPlum,
+                                    style = Stroke(width = 1.5.dp.toPx())
+                                )
+                                drawLine(color = DeepPlum, start = Offset(w * 0.25f, h * 0.35f), end = Offset(w * 0.75f, h * 0.35f), strokeWidth = 1.5.dp.toPx())
+                                drawLine(color = DeepPlum, start = Offset(w * 0.25f, h * 0.65f), end = Offset(w * 0.55f, h * 0.65f), strokeWidth = 1.5.dp.toPx())
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column {
+                            Text(
+                                text = "Fee Details & Invoices",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "October tuition · ₹2,400 due 10 Oct",
+                                fontSize = 12.sp,
+                                color = MutedBodyText
+                            )
+                        }
+                    }
+
+                    Canvas(modifier = Modifier.size(12.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        val stroke = 1.8.dp.toPx()
+                        drawLine(color = DeepPlum, start = Offset(0f, 0f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
+                        drawLine(color = DeepPlum, start = Offset(w, h / 2), end = Offset(0f, h), strokeWidth = stroke, cap = StrokeCap.Round)
                     }
                 }
             }
@@ -641,8 +731,8 @@ fun TabIcon(tab: HomeTab, color: Color) {
                 drawPath(
                     path = Path().apply {
                         addRoundRect(
-                            androidx.compose.ui.geometry.RoundRect(
-                                rect = androidx.compose.ui.geometry.Rect(0f, h * 0.2f, w, h),
+                            RoundRect(
+                                rect = Rect(0f, h * 0.2f, w, h),
                                 cornerRadius = CornerRadius(6f, 6f)
                             )
                         )
@@ -676,7 +766,7 @@ fun TabIcon(tab: HomeTab, color: Color) {
                 drawPath(
                     path = Path().apply {
                         arcTo(
-                            rect = androidx.compose.ui.geometry.Rect(0f, h * 0.45f, w, h * 1.15f),
+                            rect = Rect(0f, h * 0.45f, w, h * 1.15f),
                             startAngleDegrees = 180f,
                             sweepAngleDegrees = 180f,
                             forceMoveTo = false
@@ -700,7 +790,8 @@ fun StudentHomeScreenPreview() {
             onViewClassDetailsClick = {},
             onOpenSadhanaClick = {},
             onExploreEventsClick = {},
-            onNotificationsClick = {}
+            onNotificationsClick = {},
+            onFeesClick = {}
         )
     }
 }

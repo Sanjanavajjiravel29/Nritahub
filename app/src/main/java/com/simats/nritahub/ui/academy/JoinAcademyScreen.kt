@@ -521,18 +521,6 @@ fun RoleIcon(role: RoleType, color: Color) {
                     style = Stroke(width = 2f)
                 )
             }
-            RoleType.PARENT -> {
-                // Heart Icon
-                drawPath(
-                    path = Path().apply {
-                        moveTo(w * 0.5f, h * 0.85f)
-                        cubicTo(0f, h * 0.5f, 0f, h * 0.15f, w * 0.5f, h * 0.35f)
-                        cubicTo(w, h * 0.15f, w, h * 0.5f, w * 0.5f, h * 0.85f)
-                    },
-                    color = color,
-                    style = Stroke(width = 2f)
-                )
-            }
             RoleType.INSTRUCTOR -> {
                 // Musical Note Icon
                 drawCircle(color = color, radius = 3.5f, center = Offset(w * 0.35f, h * 0.75f))

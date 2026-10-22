@@ -62,7 +62,10 @@ import com.simats.nritahub.ui.theme.SoftLavenderBadge
 fun ClassScheduleScreen(
     viewModel: ClassScheduleViewModel = remember { ClassScheduleViewModel() },
     onNavigateToHome: () -> Unit,
-    onNavigateToClassDetail: () -> Unit
+    onNavigateToClassDetail: () -> Unit,
+    onNavigateToPractice: () -> Unit = {},
+    onNavigateToProgress: () -> Unit = {},
+    onNavigateToProfile: () -> Unit = {}
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -84,7 +87,15 @@ fun ClassScheduleScreen(
         uiState = uiState,
         onViewModeChange = viewModel::onViewModeChanged,
         onDaySelect = viewModel::onDaySelected,
-        onTabSelect = viewModel::onTabSelected,
+        onTabSelect = { tab ->
+            when (tab) {
+                HomeTab.HOME -> onNavigateToHome()
+                HomeTab.SCHEDULE -> viewModel.onTabSelected(tab)
+                HomeTab.PRACTICE -> onNavigateToPractice()
+                HomeTab.PROGRESS -> onNavigateToProgress()
+                HomeTab.PROFILE -> onNavigateToProfile()
+            }
+        },
         onClassClick = viewModel::onClassClicked
     )
 }

@@ -10,7 +10,7 @@ sealed interface CreateAccountNavigationEvent {
 data class CreateAccountUiState(
     val headerNumber: String = "04",
     val title: String = "Begin your journey",
-    val roleAndAcademyBadge: String = "STUDENT · SADHANA DANCE ACADEMY",
+    val roleAndAcademyBadge: String = "STUDENT · SRI KANCHI SHETHIRA KALA MANDIR",
     val subtitle: String = "A few details to keep you connected to your academy.",
     val fullName: String = "Ananya Rao",
     val mobileNumber: String = "+91 98765 43210",
