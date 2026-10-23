@@ -12,6 +12,7 @@ import androidx.compose.runtime.setValue
 import com.simats.nritahub.ui.academy.JoinAcademyScreen
 import com.simats.nritahub.ui.academy.RoleType
 import com.simats.nritahub.ui.admin.AdministratorDashboardScreen
+import com.simats.nritahub.ui.adminprofile.AdministratorProfileScreen
 import com.simats.nritahub.ui.assignment.AssignmentDetailScreen
 import com.simats.nritahub.ui.attendance.AttendanceHistoryScreen
 import com.simats.nritahub.ui.auth.SignInScreen
@@ -74,6 +75,7 @@ enum class Screen {
     AdministratorDashboard, // Page 29
     ManageBatches,          // Page 30
     FeeManagement,          // Page 31
+    AdministratorProfile,   // Page 32
     Home
 }
 
@@ -285,7 +287,7 @@ fun NrityaHubApp() {
                 onNavigateToNotifications = { currentScreen = Screen.Notifications },
                 onNavigateToFees = { currentScreen = Screen.FeeManagement },
                 onNavigateToSchedule = { currentScreen = Screen.ClassSchedule },
-                onNavigateToProfile = { currentScreen = Screen.AccountSettings },
+                onNavigateToProfile = { currentScreen = Screen.AdministratorProfile },
                 onNavigateToBatches = { currentScreen = Screen.ManageBatches }
             )
         }
@@ -297,6 +299,12 @@ fun NrityaHubApp() {
         Screen.FeeManagement -> {
             FeeManagementScreen(
                 onNavigateToOverview = { currentScreen = Screen.AdministratorDashboard }
+            )
+        }
+        Screen.AdministratorProfile -> {
+            AdministratorProfileScreen(
+                onNavigateToOverview = { currentScreen = Screen.AdministratorDashboard },
+                onSignOut = { currentScreen = Screen.Splash }
             )
         }
         Screen.Home -> {
