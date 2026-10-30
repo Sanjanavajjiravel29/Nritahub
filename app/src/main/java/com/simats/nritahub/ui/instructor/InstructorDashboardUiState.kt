@@ -18,10 +18,10 @@ sealed interface InstructorDashboardNavigationEvent {
 
 data class InstructorDashboardUiState(
     val headerNumber: String = "24",
-    val title: String = "Namaste, Meera",
+    val title: String = "Namaste",
     val selectedTab: InstructorTab = InstructorTab.TODAY,
     val instructorInitials: String = "MI",
-    val dateAndAcademyText: String = "Tuesday, 6 October · Sri Kanchi Shethira Kala Mandir",
+    val dateAndAcademyText: String = "Sri Kanchi Shethira Kala Mandir",
     val classesTodayCount: String = "2",
     val toReviewCount: String = "3",
     val totalStudentsCount: String = "38",
@@ -29,7 +29,7 @@ data class InstructorDashboardUiState(
     val class1Title: String = "Bharatanatyam Foundation F2",
     val class1Detail: String = "18 students · Studio 1 · Hasta basics",
     val class1Status: String = "Attendance not marked",
-    val class1Badge: String = "To do",
+    val class1Badge: String = "Set reminder",
     val class2Time: String = "6:00–7:00 PM",
     val class2Title: String = "Bharatanatyam Foundation F1",
     val class2Detail: String = "20 students · Studio 2 · Tatta Adavu & posture",
