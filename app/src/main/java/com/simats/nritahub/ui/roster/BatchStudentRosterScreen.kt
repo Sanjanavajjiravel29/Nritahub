@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
@@ -89,8 +88,7 @@ fun BatchStudentRosterScreen(
 
     BatchStudentRosterContent(
         uiState = uiState,
-        onSearchQueryChange = viewModel::onSearchQueryChanged,
-        onFilterSelect = viewModel::onFilterSelected,
+        onBatchSelect = viewModel::onBatchSelected,
         onStudentClick = viewModel::onStudentClicked,
         onOpenBatchAttendanceClick = viewModel::onOpenBatchAttendanceClicked,
         onTabSelect = viewModel::onTabSelected,
@@ -101,12 +99,11 @@ fun BatchStudentRosterScreen(
 @Composable
 fun BatchStudentRosterContent(
     uiState: BatchStudentRosterUiState,
-    onSearchQueryChange: (String) -> Unit,
-    onFilterSelect: (RosterFilter) -> Unit,
-    onStudentClick: (StudentRosterItem) -> Unit,
-    onOpenBatchAttendanceClick: () -> Unit,
-    onTabSelect: (InstructorTab) -> Unit,
-    onBackClick: () -> Unit
+    onBatchSelect: (String) -> Unit = {},
+    onStudentClick: (StudentRosterItem) -> Unit = {},
+    onOpenBatchAttendanceClick: () -> Unit = {},
+    onTabSelect: (InstructorTab) -> Unit = {},
+    onBackClick: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = CreamBackground,
@@ -163,46 +160,36 @@ fun BatchStudentRosterContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Canvas(modifier = Modifier.size(16.dp)) {
-                            val w = size.width
-                            val h = size.height
-                            val stroke = 2.dp.toPx()
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w, h / 2),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w * 0.4f, h * 0.2f),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w * 0.4f, h * 0.8f),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                        }
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Canvas(modifier = Modifier.size(16.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        val stroke = 2.dp.toPx()
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w, h / 2),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w * 0.4f, h * 0.2f),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w * 0.4f, h * 0.8f),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · BATCH STUDENT ROSTER",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -228,162 +215,120 @@ fun BatchStudentRosterContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Active Batch Header Card
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp)
-                ) {
-                    Text(
-                        text = uiState.batchTitle,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = DarkMaroonText
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = uiState.batchSchedule,
-                        fontSize = 13.sp,
-                        color = MutedBodyText
-                    )
-
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                        Box(
-                            modifier = Modifier
-                                .background(CardBackground, shape = RoundedCornerShape(12.dp))
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = uiState.studentCountBadge,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DeepPlum
-                            )
-                        }
-
-                        Box(
-                            modifier = Modifier
-                                .background(CardBackground, shape = RoundedCornerShape(12.dp))
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = uiState.studioBadge,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DeepPlum
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Search Batch Section
+            // 2 Batches Selection Cards
             Text(
-                text = "Search batch",
+                text = "Select batch",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkMaroonText
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground),
-                border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        if (uiState.searchQuery.isEmpty()) {
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                uiState.batches.forEach { batch ->
+                    val isSelected = uiState.selectedBatchId == batch.id
+                    val cardBg = if (isSelected) SoftLavenderBadge else CardBackground
+                    val cardBorder = if (isSelected) BorderStroke(1.5.dp, DeepPlum) else BorderStroke(1.dp, CardBorder)
+
+                    Card(
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = cardBg),
+                        border = cardBorder,
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .clickable { onBatchSelect(batch.id) }
+                    ) {
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = batch.title,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DarkMaroonText
+                                )
+
+                                if (isSelected) {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(DeepPlum, shape = RoundedCornerShape(10.dp))
+                                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                                    ) {
+                                        Text(
+                                            text = "Active",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
                             Text(
-                                text = "Search student name",
-                                fontSize = 13.sp,
+                                text = batch.schedule,
+                                fontSize = 12.sp,
                                 color = MutedBodyText
                             )
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
+                                Box(
+                                    modifier = Modifier
+                                        .background(CardBackground, shape = RoundedCornerShape(10.dp))
+                                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = batch.studentCountBadge,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = DeepPlum
+                                    )
+                                }
+
+                                Box(
+                                    modifier = Modifier
+                                        .background(CardBackground, shape = RoundedCornerShape(10.dp))
+                                        .padding(horizontal = 8.dp, vertical = 3.dp)
+                                ) {
+                                    Text(
+                                        text = batch.studioBadge,
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = DeepPlum
+                                    )
+                                }
+                            }
                         }
-                        BasicTextField(
-                            value = uiState.searchQuery,
-                            onValueChange = onSearchQueryChange,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    // Search Icon
-                    Canvas(modifier = Modifier.size(16.dp)) {
-                        val w = size.width
-                        val h = size.height
-                        drawCircle(color = DeepPlum, radius = w * 0.35f, center = Offset(w * 0.4f, h * 0.4f), style = Stroke(width = 1.5.dp.toPx()))
-                        drawLine(color = DeepPlum, start = Offset(w * 0.65f, h * 0.65f), end = Offset(w, h), strokeWidth = 1.8.dp.toPx(), cap = StrokeCap.Round)
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(14.dp))
+            Spacer(modifier = Modifier.height(18.dp))
 
-            // Category Filter Chips Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                RosterFilter.entries.forEach { filter ->
-                    val isSelected = uiState.selectedFilter == filter
-                    val chipBg = if (isSelected) DeepPlum else Color(0xFFF3ECE5)
-                    val chipTextColor = if (isSelected) Color.White else DarkMaroonText
-                    val label = when (filter) {
-                        RosterFilter.ALL -> "All"
-                        RosterFilter.NEEDS_FOLLOW_UP -> "Needs follow-up"
-                        RosterFilter.NEW -> "New"
-                    }
+            // Active Batch Students Section Header
+            val activeBatch = uiState.batches.find { it.id == uiState.selectedBatchId } ?: uiState.batches.first()
+            val currentStudents = if (uiState.selectedBatchId == "f2") uiState.batch1Students else uiState.batch2Students
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(chipBg)
-                            .clickable { onFilterSelect(filter) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = chipTextColor
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // "September attendance" Section Header Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.SpaceBetween,
                 verticalAlignment = Alignment.CenterVertically
             ) {
                 Text(
-                    text = uiState.selectedMonthTitle,
+                    text = "${activeBatch.title} Students",
                     fontFamily = FontFamily.Serif,
-                    fontSize = 22.sp,
+                    fontSize = 18.sp,
                     color = DarkMaroonText
                 )
 
@@ -405,13 +350,7 @@ fun BatchStudentRosterContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    val filteredStudents = if (uiState.searchQuery.isBlank()) {
-                        uiState.students
-                    } else {
-                        uiState.students.filter { it.name.contains(uiState.searchQuery, ignoreCase = true) }
-                    }
-
-                    filteredStudents.forEachIndexed { index, student ->
+                    currentStudents.forEachIndexed { index, student ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
@@ -466,7 +405,7 @@ fun BatchStudentRosterContent(
                             }
                         }
 
-                        if (index < filteredStudents.size - 1) {
+                        if (index < currentStudents.size - 1) {
                             HorizontalDivider(
                                 color = CardBorder,
                                 thickness = 1.dp,
@@ -478,30 +417,6 @@ fun BatchStudentRosterContent(
             }
 
             Spacer(modifier = Modifier.height(16.dp))
-
-            // View all link
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = uiState.viewAllText,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = DeepPlum
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Canvas(modifier = Modifier.size(12.dp)) {
-                    val w = size.width
-                    val h = size.height
-                    val stroke = 1.5.dp.toPx()
-                    drawLine(color = DeepPlum, start = Offset(0f, h / 2), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                    drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.2f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                    drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.8f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
 
             // Guidance Note
             Text(
@@ -546,8 +461,7 @@ fun BatchStudentRosterScreenPreview() {
     NritahubTheme {
         BatchStudentRosterContent(
             uiState = BatchStudentRosterUiState(),
-            onSearchQueryChange = {},
-            onFilterSelect = {},
+            onBatchSelect = {},
             onStudentClick = {},
             onOpenBatchAttendanceClick = {},
             onTabSelect = {},

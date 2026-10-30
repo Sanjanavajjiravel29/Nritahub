@@ -29,7 +29,7 @@ data class InstructorDashboardUiState(
     val class1Title: String = "Bharatanatyam Foundation F2",
     val class1Detail: String = "18 students · Studio 1 · Hasta basics",
     val class1Status: String = "Attendance not marked",
-    val class1Badge: String = "Set reminder",
+    val class1Badge: String = "To do",
     val class2Time: String = "6:00–7:00 PM",
     val class2Title: String = "Bharatanatyam Foundation F1",
     val class2Detail: String = "20 students · Studio 2 · Tatta Adavu & posture",

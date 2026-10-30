@@ -18,7 +18,6 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
-import androidx.compose.foundation.text.BasicTextField
 import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
@@ -81,7 +80,7 @@ fun MarkAttendanceScreen(
 
     MarkAttendanceContent(
         uiState = uiState,
-        onSearchQueryChange = viewModel::onSearchQueryChanged,
+        onBatchSelect = viewModel::onBatchSelected,
         onSetStatus = viewModel::setStudentStatus,
         onSaveAttendanceClick = viewModel::onSaveAttendanceClicked,
         onBackClick = viewModel::onBackClicked
@@ -91,10 +90,10 @@ fun MarkAttendanceScreen(
 @Composable
 fun MarkAttendanceContent(
     uiState: MarkAttendanceUiState,
-    onSearchQueryChange: (String) -> Unit,
-    onSetStatus: (id: String, status: AttendanceStatus) -> Unit,
-    onSaveAttendanceClick: () -> Unit,
-    onBackClick: () -> Unit
+    onBatchSelect: (String) -> Unit = {},
+    onSetStatus: (id: String, status: AttendanceStatus) -> Unit = { _, _ -> },
+    onSaveAttendanceClick: () -> Unit = {},
+    onBackClick: () -> Unit = {}
 ) {
     Scaffold(
         containerColor = CreamBackground
@@ -112,46 +111,36 @@ fun MarkAttendanceContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Canvas(modifier = Modifier.size(16.dp)) {
-                            val w = size.width
-                            val h = size.height
-                            val stroke = 2.dp.toPx()
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w, h / 2),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w * 0.4f, h * 0.2f),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w * 0.4f, h * 0.8f),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                        }
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Canvas(modifier = Modifier.size(16.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        val stroke = 2.dp.toPx()
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w, h / 2),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w * 0.4f, h * 0.2f),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w * 0.4f, h * 0.8f),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · MARK ATTENDANCE",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -177,45 +166,71 @@ fun MarkAttendanceContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Active Class Header Card
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp)
-                ) {
-                    Text(
-                        text = uiState.classTitle,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = DarkMaroonText
-                    )
+            // 2 Batches Selection Cards
+            Text(
+                text = "Select batch",
+                fontSize = 13.sp,
+                fontWeight = FontWeight.Bold,
+                color = DarkMaroonText
+            )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
-                    Text(
-                        text = uiState.classScheduleAndStudio,
-                        fontSize = 12.sp,
-                        color = MutedBodyText
-                    )
+            Column(verticalArrangement = Arrangement.spacedBy(10.dp)) {
+                uiState.batches.forEach { batch ->
+                    val isSelected = uiState.selectedBatchId == batch.id
+                    val cardBg = if (isSelected) SoftLavenderBadge else CardBackground
+                    val cardBorder = if (isSelected) BorderStroke(1.5.dp, DeepPlum) else BorderStroke(1.dp, CardBorder)
 
-                    Spacer(modifier = Modifier.height(12.dp))
-
-                    Box(
+                    Card(
+                        shape = RoundedCornerShape(18.dp),
+                        colors = CardDefaults.cardColors(containerColor = cardBg),
+                        border = cardBorder,
                         modifier = Modifier
-                            .background(Color(0xFFFDF3E5), shape = RoundedCornerShape(12.dp))
-                            .padding(horizontal = 10.dp, vertical = 4.dp)
+                            .fillMaxWidth()
+                            .clickable { onBatchSelect(batch.id) }
                     ) {
-                        Text(
-                            text = uiState.draftBadge,
-                            fontSize = 11.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = Color(0xFFA05C1C)
-                        )
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = batch.title,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DarkMaroonText
+                                )
+
+                                if (isSelected) {
+                                    Box(
+                                        modifier = Modifier
+                                            .background(DeepPlum, shape = RoundedCornerShape(10.dp))
+                                            .padding(horizontal = 8.dp, vertical = 3.dp)
+                                    ) {
+                                        Text(
+                                            text = "Active",
+                                            fontSize = 10.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = Color.White
+                                        )
+                                    }
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(4.dp))
+
+                            Text(
+                                text = batch.scheduleAndStudio,
+                                fontSize = 12.sp,
+                                color = MutedBodyText
+                            )
+                        }
                     }
                 }
             }
@@ -299,63 +314,20 @@ fun MarkAttendanceContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Search Learner Input Box
+            // Active Batch Students List Header
+            val activeBatch = uiState.batches.find { it.id == uiState.selectedBatchId } ?: uiState.batches.first()
+
             Text(
-                text = "Find a learner",
-                fontSize = 13.sp,
-                fontWeight = FontWeight.Bold,
+                text = "${activeBatch.title} Roster",
+                fontFamily = FontFamily.Serif,
+                fontSize = 18.sp,
                 color = DarkMaroonText
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
-
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground),
-                border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(horizontal = 16.dp, vertical = 12.dp),
-                    verticalAlignment = Alignment.CenterVertically,
-                    horizontalArrangement = Arrangement.SpaceBetween
-                ) {
-                    Box(modifier = Modifier.weight(1f)) {
-                        if (uiState.searchQuery.isEmpty()) {
-                            Text(
-                                text = "Search student name",
-                                fontSize = 13.sp,
-                                color = MutedBodyText
-                            )
-                        }
-                        BasicTextField(
-                            value = uiState.searchQuery,
-                            onValueChange = onSearchQueryChange,
-                            modifier = Modifier.fillMaxWidth()
-                        )
-                    }
-
-                    Canvas(modifier = Modifier.size(16.dp)) {
-                        val w = size.width
-                        val h = size.height
-                        drawCircle(color = DeepPlum, radius = w * 0.35f, center = Offset(w * 0.4f, h * 0.4f), style = Stroke(width = 1.5.dp.toPx()))
-                        drawLine(color = DeepPlum, start = Offset(w * 0.65f, h * 0.65f), end = Offset(w, h), strokeWidth = 1.8.dp.toPx(), cap = StrokeCap.Round)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
             // Students List Cards
-            val filteredStudents = if (uiState.searchQuery.isBlank()) {
-                uiState.students
-            } else {
-                uiState.students.filter { it.name.contains(uiState.searchQuery, ignoreCase = true) }
-            }
-
-            filteredStudents.forEach { student ->
+            uiState.currentStudents.forEach { student ->
                 Card(
                     shape = RoundedCornerShape(20.dp),
                     colors = CardDefaults.cardColors(containerColor = CardBackground),
@@ -472,31 +444,7 @@ fun MarkAttendanceContent(
                 Spacer(modifier = Modifier.height(12.dp))
             }
 
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // View remaining link
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Text(
-                    text = uiState.viewRemainingText,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = DeepPlum
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Canvas(modifier = Modifier.size(12.dp)) {
-                    val w = size.width
-                    val h = size.height
-                    val stroke = 1.5.dp.toPx()
-                    drawLine(color = DeepPlum, start = Offset(0f, h / 2), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                    drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.2f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                    drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.8f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(8.dp))
 
             // Review Guidance Notice Box
             Card(
@@ -548,7 +496,7 @@ fun MarkAttendanceContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Primary Action Button ("Save attendance · 20 learners")
+            // Primary Action Button ("Save attendance")
             Button(
                 onClick = onSaveAttendanceClick,
                 colors = ButtonDefaults.buttonColors(
@@ -565,7 +513,7 @@ fun MarkAttendanceContent(
                     verticalAlignment = Alignment.CenterVertically
                 ) {
                     Text(
-                        text = if (uiState.isSaved) "Saved ✓" else "Save attendance · 20 learners",
+                        text = if (uiState.isSaved) "Saved ✓" else "Save attendance",
                         fontSize = 15.sp,
                         fontWeight = FontWeight.SemiBold
                     )
@@ -591,7 +539,7 @@ fun MarkAttendanceScreenPreview() {
     NritahubTheme {
         MarkAttendanceContent(
             uiState = MarkAttendanceUiState(),
-            onSearchQueryChange = {},
+            onBatchSelect = {},
             onSetStatus = { _, _ -> },
             onSaveAttendanceClick = {},
             onBackClick = {}

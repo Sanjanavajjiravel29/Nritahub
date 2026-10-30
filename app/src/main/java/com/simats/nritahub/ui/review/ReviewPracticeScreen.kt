@@ -25,6 +25,8 @@ import androidx.compose.material3.Button
 import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.Checkbox
+import androidx.compose.material3.CheckboxDefaults
 import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.OutlinedButton
@@ -90,6 +92,7 @@ fun ReviewPracticeScreen(
         uiState = uiState,
         onFeedbackChange = viewModel::onFeedbackChanged,
         onNextStepChange = viewModel::onNextStepChanged,
+        onChecklistItemToggle = viewModel::onChecklistItemToggled,
         onPublishFeedbackClick = viewModel::onPublishFeedbackClicked,
         onSaveDraftClick = viewModel::onSaveDraftClicked,
         onBackClick = viewModel::onBackClicked
@@ -101,6 +104,7 @@ fun ReviewPracticeContent(
     uiState: ReviewPracticeUiState,
     onFeedbackChange: (String) -> Unit,
     onNextStepChange: (String) -> Unit,
+    onChecklistItemToggle: (String) -> Unit = {},
     onPublishFeedbackClick: () -> Unit,
     onSaveDraftClick: () -> Unit,
     onBackClick: () -> Unit
@@ -121,46 +125,36 @@ fun ReviewPracticeContent(
                 verticalAlignment = Alignment.CenterVertically,
                 horizontalArrangement = Arrangement.SpaceBetween
             ) {
-                Row(verticalAlignment = Alignment.CenterVertically) {
-                    IconButton(
-                        onClick = onBackClick,
-                        modifier = Modifier.size(32.dp)
-                    ) {
-                        Canvas(modifier = Modifier.size(16.dp)) {
-                            val w = size.width
-                            val h = size.height
-                            val stroke = 2.dp.toPx()
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w, h / 2),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w * 0.4f, h * 0.2f),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                            drawLine(
-                                color = DeepPlum,
-                                start = Offset(w * 0.4f, h * 0.8f),
-                                end = Offset(0f, h / 2),
-                                strokeWidth = stroke,
-                                cap = StrokeCap.Round
-                            )
-                        }
+                IconButton(
+                    onClick = onBackClick,
+                    modifier = Modifier.size(32.dp)
+                ) {
+                    Canvas(modifier = Modifier.size(16.dp)) {
+                        val w = size.width
+                        val h = size.height
+                        val stroke = 2.dp.toPx()
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w, h / 2),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w * 0.4f, h * 0.2f),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
+                        drawLine(
+                            color = DeepPlum,
+                            start = Offset(w * 0.4f, h * 0.8f),
+                            end = Offset(0f, h / 2),
+                            strokeWidth = stroke,
+                            cap = StrokeCap.Round
+                        )
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · REVIEW PRACTICE",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -319,13 +313,24 @@ fun ReviewPracticeContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // "Supportive assessment" Section
-            Text(
-                text = uiState.assessmentTitle,
-                fontFamily = FontFamily.Serif,
-                fontSize = 22.sp,
-                color = DarkMaroonText
-            )
+            // "Instructor Evaluation Checklist" Section
+            Column {
+                Text(
+                    text = uiState.checklistTitle,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 22.sp,
+                    color = DarkMaroonText
+                )
+                if (uiState.checklistSubtitle.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(2.dp))
+                    Text(
+                        text = uiState.checklistSubtitle,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = DeepPlum
+                    )
+                }
+            }
 
             Spacer(modifier = Modifier.height(12.dp))
 
@@ -338,48 +343,45 @@ fun ReviewPracticeContent(
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(18.dp)
+                        .padding(16.dp)
                 ) {
-                    uiState.dimensions.forEachIndexed { index, dim ->
+                    uiState.checklistItems.forEachIndexed { index, item ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
+                                .clickable { onChecklistItemToggle(item.id) }
                                 .padding(vertical = 8.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Text(
-                                text = dim.dimensionName,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DarkMaroonText
+                            Checkbox(
+                                checked = item.isChecked,
+                                onCheckedChange = { onChecklistItemToggle(item.id) },
+                                colors = CheckboxDefaults.colors(
+                                    checkedColor = DeepPlum,
+                                    uncheckedColor = MediumMaroonText,
+                                    checkmarkColor = Color.White
+                                )
                             )
 
-                            Row(verticalAlignment = Alignment.CenterVertically) {
+                            Spacer(modifier = Modifier.width(8.dp))
+
+                            Column(modifier = Modifier.weight(1f)) {
                                 Text(
-                                    text = dim.selectedRating,
-                                    fontSize = 13.sp,
+                                    text = item.title,
+                                    fontSize = 14.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = DeepPlum
+                                    color = DarkMaroonText
                                 )
-                                Spacer(modifier = Modifier.width(6.dp))
-                                Canvas(modifier = Modifier.size(10.dp)) {
-                                    val w = size.width
-                                    val h = size.height
-                                    drawPath(
-                                        path = Path().apply {
-                                            moveTo(0f, h * 0.3f)
-                                            lineTo(w * 0.5f, h * 0.8f)
-                                            lineTo(w, h * 0.3f)
-                                        },
-                                        color = DeepPlum,
-                                        style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round)
-                                    )
-                                }
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = item.description,
+                                    fontSize = 12.sp,
+                                    color = MutedBodyText
+                                )
                             }
                         }
 
-                        if (index < uiState.dimensions.size - 1) {
+                        if (index < uiState.checklistItems.size - 1) {
                             HorizontalDivider(
                                 color = CardBorder,
                                 thickness = 1.dp,
@@ -387,22 +389,35 @@ fun ReviewPracticeContent(
                             )
                         }
                     }
+                }
+            }
 
-                    Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
+            // "Instructor Comments" Section
+            Column {
+                Text(
+                    text = uiState.commentBoxTitle,
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 22.sp,
+                    color = DarkMaroonText
+                )
+                if (uiState.commentBoxSubtitle.isNotEmpty()) {
+                    Spacer(modifier = Modifier.height(2.dp))
                     Text(
-                        text = uiState.assessmentFootnote,
+                        text = uiState.commentBoxSubtitle,
                         fontSize = 11.sp,
-                        color = MutedBodyText
+                        fontWeight = FontWeight.SemiBold,
+                        color = DeepPlum
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            // Your Feedback Input Card
+            // Detailed Feedback Comment Box
             Text(
-                text = "Your feedback",
+                text = "Detailed Feedback for Student",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkMaroonText
@@ -431,9 +446,9 @@ fun ReviewPracticeContent(
 
             Spacer(modifier = Modifier.height(14.dp))
 
-            // One Next Step Input Card
+            // Actionable Next Step Box
             Text(
-                text = "One next step",
+                text = "Actionable Next Step for Student",
                 fontSize = 13.sp,
                 fontWeight = FontWeight.Bold,
                 color = DarkMaroonText

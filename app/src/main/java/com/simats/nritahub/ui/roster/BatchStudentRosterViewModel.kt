@@ -12,12 +12,8 @@ class BatchStudentRosterViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(BatchStudentRosterUiState())
     val uiState: StateFlow<BatchStudentRosterUiState> = _uiState.asStateFlow()
 
-    fun onSearchQueryChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
-    }
-
-    fun onFilterSelected(filter: RosterFilter) {
-        _uiState.update { it.copy(selectedFilter = filter) }
+    fun onBatchSelected(batchId: String) {
+        _uiState.update { it.copy(selectedBatchId = batchId) }
     }
 
     fun onStudentClicked(student: StudentRosterItem) {

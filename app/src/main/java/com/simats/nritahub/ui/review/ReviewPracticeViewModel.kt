@@ -19,6 +19,15 @@ class ReviewPracticeViewModel : ViewModel() {
         _uiState.update { it.copy(nextStepText = text) }
     }
 
+    fun onChecklistItemToggled(itemId: String) {
+        _uiState.update { state ->
+            val updatedList = state.checklistItems.map { item ->
+                if (item.id == itemId) item.copy(isChecked = !item.isChecked) else item
+            }
+            state.copy(checklistItems = updatedList)
+        }
+    }
+
     fun onPublishFeedbackClicked() {
         _uiState.update {
             it.copy(

@@ -1,8 +1,10 @@
 package com.simats.nritahub.ui.review
 
-data class AssessmentDimension(
-    val dimensionName: String,
-    val selectedRating: String
+data class ChecklistItem(
+    val id: String,
+    val title: String,
+    val description: String,
+    val isChecked: Boolean = false
 )
 
 sealed interface ReviewPracticeNavigationEvent {
@@ -14,23 +16,32 @@ sealed interface ReviewPracticeNavigationEvent {
 
 data class ReviewPracticeUiState(
     val headerNumber: String = "27",
-    val title: String = "Guide the next step",
+    val title: String = "Review practice",
     val studentInitials: String = "AR",
     val studentNameAndBatch: String = "Ananya Rao · Foundation F1",
-    val statusBadge: String = "To review",
-    val submissionDetails: String = "Tatta Adavu · Submitted 5 Oct, 7:40 PM Practice recording · 01:18",
-    val studentNoteTitle: String = "ANANYA'S NOTE",
+    val statusBadge: String = "Submitted Video",
+    val submissionDetails: String = "Tatta Adavu · Submitted to instructor on 5 Oct, 7:40 PM · 01:18 recording",
+    val studentNoteTitle: String = "STUDENT SUBMISSION NOTE",
     val studentNoteText: String = "\"My count feels steadier now. I'd love help keeping my shoulders relaxed in the last set.\"",
-    val assessmentTitle: String = "Supportive assessment",
-    val dimensions: List<AssessmentDimension> = listOf(
-        AssessmentDimension("Rhythm & timing", "Developing well"),
-        AssessmentDimension("Posture & balance", "Keep exploring"),
-        AssessmentDimension("Hasta coordination", "Growing steadily")
+    val checklistTitle: String = "Instructor Evaluation Checklist",
+    val checklistSubtitle: String = "",
+    val checklistItems: List<ChecklistItem> = listOf(
+        ChecklistItem("1", "Anga Shuddham", "Body posture and clarity of form", true),
+        ChecklistItem("2", "Aramandi", "Proper half-sitting stance maintenance", true),
+        ChecklistItem("3", "Mudras Clarity", "Hand gesture accuracy and precision", true),
+        ChecklistItem("4", "Bhavam", "Expressive facial and emotional engagement", false),
+        ChecklistItem("5", "Steps", "Correct execution of adavu steps", true),
+        ChecklistItem("6", "Tala", "Rhythm and time cycle synchronization", true),
+        ChecklistItem("7", "Leg Posture", "Foot placement and leg positioning", true),
+        ChecklistItem("8", "Neatness", "Cleanliness of movements and execution", true),
+        ChecklistItem("9", "Body Stiffness", "Flexibility and absence of unwanted tension", false),
+        ChecklistItem("10", "Back Position", "Straight spine and torso alignment", true)
     ),
-    val assessmentFootnote: String = "Descriptive guidance, not scores or rankings.",
-    val feedbackText: String = "Your rhythm is settling beautifully. Try a slow count with relaxed shoulders before adding speed.",
-    val nextStepText: String = "Practice a comfortable araimandi for 2 minutes daily.",
-    val privacyNotice: String = "Published feedback is visible to Ananya and her approved linked parent. Keep it specific, kind and actionable.",
+    val commentBoxTitle: String = "Instructor Comments",
+    val commentBoxSubtitle: String = "",
+    val feedbackText: String = "Your rhythm is settling beautifully! Practice relaxing your shoulders during the 3rd speed set.",
+    val nextStepText: String = "Practice a comfortable araimandi for 2 minutes daily before recording.",
+    val privacyNotice: String = "Comments and checklist feedback will be saved for student Ananya Rao.",
     val isPublished: Boolean = false,
     val isDraftSaved: Boolean = false,
     val isLoading: Boolean = false,

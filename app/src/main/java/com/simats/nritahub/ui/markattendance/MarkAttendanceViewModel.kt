@@ -11,16 +11,19 @@ class MarkAttendanceViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(MarkAttendanceUiState())
     val uiState: StateFlow<MarkAttendanceUiState> = _uiState.asStateFlow()
 
-    fun onSearchQueryChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
+    fun onBatchSelected(batchId: String) {
+        _uiState.update { it.copy(selectedBatchId = batchId) }
     }
 
     fun setStudentStatus(id: String, status: AttendanceStatus) {
         _uiState.update { currentState ->
-            val updated = currentState.students.map {
-                if (it.id == id) it.copy(status = status) else it
+            val updateList = { list: List<AttendanceStudentItem> ->
+                list.map { if (it.id == id) it.copy(status = status) else it }
             }
-            currentState.copy(students = updated)
+            currentState.copy(
+                batch1Students = updateList(currentState.batch1Students),
+                batch2Students = updateList(currentState.batch2Students)
+            )
         }
     }
 
