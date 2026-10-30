@@ -12,20 +12,17 @@ class FeeManagementViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(FeeManagementUiState())
     val uiState: StateFlow<FeeManagementUiState> = _uiState.asStateFlow()
 
-    fun onSearchQueryChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
-    }
-
-    fun onFilterSelected(filter: FeeFilter) {
-        _uiState.update { it.copy(selectedFilter = filter) }
-    }
-
-    fun onSendReminderClicked(invoice: AdminInvoiceItem) {
-        _uiState.update { it.copy(navigationEvent = FeeManagementNavigationEvent.SendReminderClicked(invoice)) }
-    }
-
-    fun onRemindOverdueFamiliesClicked() {
-        _uiState.update { it.copy(navigationEvent = FeeManagementNavigationEvent.RemindOverdueFamiliesClicked) }
+    fun togglePaymentStatus(studentId: String) {
+        _uiState.update { currentState ->
+            val updated = currentState.studentFeeRecords.map { record ->
+                if (record.studentId == studentId) {
+                    record.copy(isPaid = !record.isPaid)
+                } else {
+                    record
+                }
+            }
+            currentState.copy(studentFeeRecords = updated)
+        }
     }
 
     fun onTabSelected(tab: AdminTab) {

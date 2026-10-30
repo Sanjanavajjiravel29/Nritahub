@@ -11,16 +11,13 @@ class EventsAnnouncementsViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(EventsAnnouncementsUiState())
     val uiState: StateFlow<EventsAnnouncementsUiState> = _uiState.asStateFlow()
 
-    fun onFilterSelected(filter: EventFilter) {
-        _uiState.update { it.copy(selectedFilter = filter) }
-    }
-
-    fun onRegisterRecitalClicked() {
-        _uiState.update { it.copy(navigationEvent = EventsAnnouncementsNavigationEvent.RegisterForRecital) }
-    }
-
-    fun onEventClicked() {
-        _uiState.update { it.copy(navigationEvent = EventsAnnouncementsNavigationEvent.OpenEventDetail) }
+    fun onRegisterWorkshopClicked() {
+        _uiState.update {
+            it.copy(
+                isWorkshopRegistered = true,
+                navigationEvent = EventsAnnouncementsNavigationEvent.WorkshopRegistered
+            )
+        }
     }
 
     fun onBackClicked() {

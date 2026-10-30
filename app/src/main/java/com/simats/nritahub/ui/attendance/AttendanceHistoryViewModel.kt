@@ -11,14 +11,6 @@ class AttendanceHistoryViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(AttendanceHistoryUiState())
     val uiState: StateFlow<AttendanceHistoryUiState> = _uiState.asStateFlow()
 
-    fun onMonthSelected(month: AttendanceMonth) {
-        _uiState.update { it.copy(selectedMonth = month) }
-    }
-
-    fun onViewAllClicked() {
-        _uiState.update { it.copy(navigationEvent = AttendanceHistoryNavigationEvent.ViewAllRecords) }
-    }
-
     fun onBackClicked() {
         _uiState.update { it.copy(navigationEvent = AttendanceHistoryNavigationEvent.NavigateBack) }
     }

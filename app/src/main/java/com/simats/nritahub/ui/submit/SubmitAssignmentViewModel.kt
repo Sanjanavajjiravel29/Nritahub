@@ -31,10 +31,6 @@ class SubmitAssignmentViewModel : ViewModel() {
         _uiState.update { it.copy(navigationEvent = SubmitAssignmentNavigationEvent.SubmittedToInstructor) }
     }
 
-    fun onSaveDraftClicked() {
-        _uiState.update { it.copy(navigationEvent = SubmitAssignmentNavigationEvent.DraftSaved) }
-    }
-
     fun onBackClicked() {
         _uiState.update { it.copy(navigationEvent = SubmitAssignmentNavigationEvent.NavigateBack) }
     }

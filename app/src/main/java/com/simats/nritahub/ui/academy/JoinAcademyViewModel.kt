@@ -11,29 +11,28 @@ class JoinAcademyViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(JoinAcademyUiState())
     val uiState: StateFlow<JoinAcademyUiState> = _uiState.asStateFlow()
 
-    fun onRoleSelected(role: RoleType) {
-        _uiState.update { it.copy(selectedRole = role) }
+    fun onUsernameOrEmailChanged(value: String) {
+        _uiState.update { it.copy(usernameOrEmail = value) }
     }
 
-    fun onAcademySelected(academy: String) {
-        _uiState.update { it.copy(selectedAcademy = academy) }
+    fun onPasswordChanged(value: String) {
+        _uiState.update { it.copy(password = value) }
     }
 
-    fun onInvitationCodeChanged(code: String) {
-        _uiState.update { it.copy(invitationCode = code) }
+    fun togglePasswordVisibility() {
+        _uiState.update { it.copy(isPasswordVisible = !it.isPasswordVisible) }
     }
 
-    fun onContinueClicked() {
-        val currentState = _uiState.value
-        _uiState.update {
-            it.copy(
-                navigationEvent = JoinAcademyNavigationEvent.NavigateToHome(
-                    role = currentState.selectedRole,
-                    academy = currentState.selectedAcademy,
-                    code = currentState.invitationCode
-                )
-            )
-        }
+    fun onSignInClicked() {
+        _uiState.update { it.copy(navigationEvent = JoinAcademyNavigationEvent.SignInSuccess) }
+    }
+
+    fun onForgotPasswordClicked() {
+        _uiState.update { it.copy(navigationEvent = JoinAcademyNavigationEvent.ForgotPassword) }
+    }
+
+    fun onSignUpClicked() {
+        _uiState.update { it.copy(navigationEvent = JoinAcademyNavigationEvent.NavigateToSignUp) }
     }
 
     fun onBackClicked() {

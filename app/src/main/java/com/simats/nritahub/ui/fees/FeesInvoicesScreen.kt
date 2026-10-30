@@ -41,7 +41,9 @@ import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontFamily
+import androidx.compose.ui.text.font.FontStyle
 import androidx.compose.ui.text.font.FontWeight
+import androidx.compose.ui.text.style.TextAlign
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
@@ -58,8 +60,7 @@ import com.simats.nritahub.ui.theme.SoftLavenderBadge
 @Composable
 fun FeesInvoicesScreen(
     viewModel: FeesInvoicesViewModel = remember { FeesInvoicesViewModel() },
-    onBackToPrevious: () -> Unit,
-    onNavigateToPaymentReview: () -> Unit = {}
+    onBackToPrevious: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -69,21 +70,13 @@ fun FeesInvoicesScreen(
                 onBackToPrevious()
                 viewModel.onNavigationHandled()
             }
-            FeesInvoicesNavigationEvent.ProcessPayment -> {
-                onNavigateToPaymentReview()
-                viewModel.onNavigationHandled()
-            }
-            FeesInvoicesNavigationEvent.ContactOffice -> {
-                viewModel.onNavigationHandled()
-            }
             FeesInvoicesNavigationEvent.None -> {}
         }
     }
 
     FeesInvoicesContent(
         uiState = uiState,
-        onPayClick = viewModel::onPayClicked,
-        onContactOfficeClick = viewModel::onContactOfficeClicked,
+        onGenerateInvoiceClick = viewModel::onGenerateInvoiceClicked,
         onBackClick = viewModel::onBackClicked
     )
 }
@@ -91,8 +84,7 @@ fun FeesInvoicesScreen(
 @Composable
 fun FeesInvoicesContent(
     uiState: FeesInvoicesUiState,
-    onPayClick: () -> Unit,
-    onContactOfficeClick: () -> Unit,
+    onGenerateInvoiceClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -143,14 +135,6 @@ fun FeesInvoicesContent(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · FEES & INVOICES",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -166,20 +150,11 @@ fun FeesInvoicesContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Main Title
-            Text(
-                text = uiState.title,
-                fontFamily = FontFamily.Serif,
-                fontSize = 32.sp,
-                color = DarkMaroonText
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Outstanding Balance Banner Card
+            // Main Card Container
             Card(
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
+                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                border = BorderStroke(1.dp, CardBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
@@ -187,238 +162,196 @@ fun FeesInvoicesContent(
                         .fillMaxWidth()
                         .padding(20.dp)
                 ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Text(
-                            text = "Outstanding balance",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkMaroonText
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .background(Color(0xFFFDF3E5), shape = RoundedCornerShape(12.dp))
-                                .padding(horizontal = 10.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = uiState.dueDateBadgeText,
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFA05C1C)
-                            )
-                        }
-                    }
-
-                    Spacer(modifier = Modifier.height(8.dp))
-
                     Text(
-                        text = uiState.outstandingBalanceText,
+                        text = uiState.title,
                         fontFamily = FontFamily.Serif,
-                        fontSize = 36.sp,
+                        fontSize = 24.sp,
                         fontWeight = FontWeight.Bold,
                         color = DarkMaroonText
                     )
 
-                    Spacer(modifier = Modifier.height(4.dp))
+                    Spacer(modifier = Modifier.height(2.dp))
 
                     Text(
-                        text = uiState.balanceSubtitle,
-                        fontSize = 13.sp,
+                        text = uiState.subtitle,
+                        fontSize = 11.sp,
+                        fontWeight = FontWeight.Bold,
+                        letterSpacing = 0.8.sp,
                         color = MutedBodyText
                     )
 
                     Spacer(modifier = Modifier.height(16.dp))
 
-                    Button(
-                        onClick = onPayClick,
-                        colors = ButtonDefaults.buttonColors(
-                            containerColor = DeepPlum,
-                            contentColor = Color.White
-                        ),
-                        shape = RoundedCornerShape(24.dp),
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(52.dp)
+                    // Top Status Card (Paid Status Banner)
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFE8F5E9)),
+                        border = BorderStroke(1.dp, Color(0xFFC8E6C9)),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
                         Row(
-                            horizontalArrangement = Arrangement.Center,
-                            verticalAlignment = Alignment.CenterVertically
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp),
+                            verticalAlignment = Alignment.CenterVertically,
+                            horizontalArrangement = Arrangement.SpaceBetween
                         ) {
-                            Text(
-                                text = uiState.payButtonText,
-                                fontSize = 16.sp,
-                                fontWeight = FontWeight.SemiBold
-                            )
-                            Spacer(modifier = Modifier.width(8.dp))
-                            Canvas(modifier = Modifier.size(16.dp)) {
-                                val w = size.width
-                                val h = size.height
-                                val stroke = 2.dp.toPx()
-                                drawLine(color = Color.White, start = Offset(0f, h / 2), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                                drawLine(color = Color.White, start = Offset(w * 0.6f, h * 0.2f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                                drawLine(color = Color.White, start = Offset(w * 0.6f, h * 0.8f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(32.dp)
+                                        .clip(CircleShape)
+                                        .background(Color(0xFF2E7D32)),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Canvas(modifier = Modifier.size(16.dp)) {
+                                        val w = size.width
+                                        val h = size.height
+                                        drawPath(
+                                            path = Path().apply {
+                                                moveTo(0f, h * 0.5f)
+                                                lineTo(w * 0.35f, h * 0.85f)
+                                                lineTo(w, h * 0.2f)
+                                            },
+                                            color = Color.White,
+                                            style = Stroke(width = 2.dp.toPx(), cap = StrokeCap.Round)
+                                        )
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column {
+                                    Text(
+                                        text = "Fee Status",
+                                        fontSize = 11.sp,
+                                        color = Color(0xFF2E7D32)
+                                    )
+                                    Text(
+                                        text = "Paid",
+                                        fontSize = 18.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFF2E7D32)
+                                    )
+                                    Text(
+                                        text = "Your fee has been successfully paid.",
+                                        fontSize = 12.sp,
+                                        color = Color(0xFF2E7D32)
+                                    )
+                                }
                             }
-                        }
-                    }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // "Current invoice" Section
-            Text(
-                text = "Current invoice",
-                fontFamily = FontFamily.Serif,
-                fontSize = 22.sp,
-                color = DarkMaroonText
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground),
-                border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(18.dp)
-                ) {
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.Top
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            Text(
-                                text = uiState.currentInvoice.title,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DarkMaroonText
-                            )
-                            Spacer(modifier = Modifier.height(2.dp))
-                            Text(
-                                text = uiState.currentInvoice.invoiceIdAndDate,
-                                fontSize = 12.sp,
-                                color = MutedBodyText
-                            )
-                        }
-
-                        Row(verticalAlignment = Alignment.CenterVertically) {
-                            Text(
-                                text = uiState.currentInvoice.amountText,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DarkMaroonText
-                            )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Canvas(modifier = Modifier.size(16.dp)) {
-                                val w = size.width
-                                val h = size.height
-                                drawPath(
-                                    path = Path().apply {
-                                        moveTo(0f, 0f)
-                                        lineTo(w * 0.7f, 0f)
-                                        lineTo(w, h * 0.3f)
-                                        lineTo(w, h)
-                                        lineTo(0f, h)
-                                        close()
-                                    },
-                                    color = DeepPlum,
-                                    style = Stroke(width = 1.5.dp.toPx())
+                            Box(
+                                modifier = Modifier
+                                    .background(Color.White, shape = RoundedCornerShape(12.dp))
+                                    .padding(horizontal = 10.dp, vertical = 4.dp)
+                            ) {
+                                Text(
+                                    text = "Invoice Available",
+                                    fontSize = 10.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = Color(0xFF2E7D32)
                                 )
                             }
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(14.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-                    Row(
-                        modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
+                    // Student Details Summary Card
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFAF6F2)),
+                        border = BorderStroke(1.dp, CardBorder),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        Text(
-                            text = uiState.currentInvoice.studentAndPlan,
-                            fontSize = 12.sp,
-                            color = MutedBodyText
-                        )
-
-                        Box(
-                            modifier = Modifier
-                                .background(Color(0xFFFFF3E0), shape = RoundedCornerShape(12.dp))
-                                .padding(horizontal = 12.dp, vertical = 4.dp)
-                        ) {
-                            Text(
-                                text = "Pending",
-                                fontSize = 11.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = Color(0xFFEF6C00)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // "Payment history" Section
-            Text(
-                text = "Payment history",
-                fontFamily = FontFamily.Serif,
-                fontSize = 22.sp,
-                color = DarkMaroonText
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground),
-                border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    uiState.paymentHistory.forEachIndexed { index, item ->
                         Column(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .padding(18.dp)
+                                .padding(16.dp)
                         ) {
-                            Row(
-                                modifier = Modifier.fillMaxWidth(),
-                                horizontalArrangement = Arrangement.SpaceBetween,
-                                verticalAlignment = Alignment.Top
-                            ) {
-                                Column(modifier = Modifier.weight(1f)) {
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(40.dp)
+                                        .clip(CircleShape)
+                                        .background(SoftLavenderBadge),
+                                    contentAlignment = Alignment.Center
+                                ) {
                                     Text(
-                                        text = item.title,
+                                        text = "AS",
                                         fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = DeepPlum
+                                    )
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column {
+                                    Text(
+                                        text = uiState.studentName,
+                                        fontSize = 16.sp,
                                         fontWeight = FontWeight.Bold,
                                         color = DarkMaroonText
                                     )
-                                    Spacer(modifier = Modifier.height(2.dp))
                                     Text(
-                                        text = item.invoiceIdAndDate,
+                                        text = "Student ID: ${uiState.studentId}",
+                                        fontSize = 12.sp,
+                                        color = MutedBodyText
+                                    )
+                                    Text(
+                                        text = "Class: ${uiState.studentClass}",
                                         fontSize = 12.sp,
                                         color = MutedBodyText
                                     )
                                 }
+                            }
 
-                                Row(verticalAlignment = Alignment.CenterVertically) {
-                                    Text(
-                                        text = item.amountText,
-                                        fontSize = 14.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = DarkMaroonText
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
+                            Spacer(modifier = Modifier.height(14.dp))
+                            HorizontalDivider(color = CardBorder, thickness = 1.dp)
+                            Spacer(modifier = Modifier.height(14.dp))
+
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween
+                            ) {
+                                Column {
+                                    Text(text = "Fee Amount", fontSize = 11.sp, color = MutedBodyText)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(text = uiState.paidFeeAmount, fontSize = 16.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                }
+
+                                Column {
+                                    Text(text = "Fee Period", fontSize = 11.sp, color = MutedBodyText)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(text = uiState.feePeriod, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                }
+
+                                Column {
+                                    Text(text = "Payment Date", fontSize = 11.sp, color = MutedBodyText)
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(text = uiState.paymentDate, fontSize = 14.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            Button(
+                                onClick = onGenerateInvoiceClick,
+                                colors = ButtonDefaults.buttonColors(
+                                    containerColor = Color(0xFF00A651),
+                                    contentColor = Color.White
+                                ),
+                                shape = RoundedCornerShape(24.dp),
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .height(48.dp)
+                            ) {
+                                Row(
+                                    horizontalArrangement = Arrangement.Center,
+                                    verticalAlignment = Alignment.CenterVertically
+                                ) {
                                     Canvas(modifier = Modifier.size(16.dp)) {
                                         val w = size.width
                                         val h = size.height
@@ -431,102 +364,329 @@ fun FeesInvoicesContent(
                                                 lineTo(0f, h)
                                                 close()
                                             },
-                                            color = DeepPlum,
-                                            style = Stroke(width = 1.5.dp.toPx())
+                                            color = Color.White,
+                                            style = Stroke(width = 1.8.dp.toPx())
+                                        )
+                                        drawLine(color = Color.White, start = Offset(w * 0.25f, h * 0.4f), end = Offset(w * 0.75f, h * 0.4f), strokeWidth = 1.5.dp.toPx())
+                                        drawLine(color = Color.White, start = Offset(w * 0.25f, h * 0.65f), end = Offset(w * 0.6f, h * 0.65f), strokeWidth = 1.5.dp.toPx())
+                                    }
+
+                                    Spacer(modifier = Modifier.width(8.dp))
+
+                                    Text(
+                                        text = "Generate Fee Invoice",
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color.White
+                                    )
+                                }
+                            }
+                        }
+                    }
+
+                    // Official Generated FEE INVOICE Document Card (Renders when clicked)
+                    if (uiState.isInvoiceGenerated) {
+                        Spacer(modifier = Modifier.height(20.dp))
+
+                        Card(
+                            shape = RoundedCornerShape(20.dp),
+                            colors = CardDefaults.cardColors(containerColor = Color.White),
+                            border = BorderStroke(1.dp, CardBorder),
+                            modifier = Modifier.fillMaxWidth()
+                        ) {
+                            Column(
+                                modifier = Modifier
+                                    .fillMaxWidth()
+                                    .padding(20.dp)
+                            ) {
+                                // Invoice Top Header
+                                Row(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    horizontalArrangement = Arrangement.SpaceBetween,
+                                    verticalAlignment = Alignment.Top
+                                ) {
+                                    Column {
+                                        Text(
+                                            text = "Nritya Hub",
+                                            fontFamily = FontFamily.Serif,
+                                            fontSize = 22.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = DeepPlum
+                                        )
+                                        Text(
+                                            text = "Dance Academy",
+                                            fontSize = 11.sp,
+                                            color = MutedBodyText
+                                        )
+                                    }
+
+                                    Column(horizontalAlignment = Alignment.End) {
+                                        Text(
+                                            text = "FEE INVOICE",
+                                            fontSize = 14.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            letterSpacing = 0.8.sp,
+                                            color = DeepPlum
+                                        )
+                                        Spacer(modifier = Modifier.height(2.dp))
+                                        Text(
+                                            text = "Invoice No: ${uiState.invoiceNo}",
+                                            fontSize = 11.sp,
+                                            fontWeight = FontWeight.Bold,
+                                            color = DarkMaroonText
+                                        )
+                                        Text(
+                                            text = "Date: ${uiState.paymentDate}",
+                                            fontSize = 11.sp,
+                                            color = MutedBodyText
                                         )
                                     }
                                 }
-                            }
 
-                            Spacer(modifier = Modifier.height(12.dp))
+                                Spacer(modifier = Modifier.height(14.dp))
+                                HorizontalDivider(color = CardBorder, thickness = 1.dp)
+                                Spacer(modifier = Modifier.height(14.dp))
 
-                            Box(
-                                modifier = Modifier
-                                    .background(Color(0xFFE8F5E9), shape = RoundedCornerShape(12.dp))
-                                    .padding(horizontal = 12.dp, vertical = 4.dp)
-                            ) {
+                                // Student Details Grid
                                 Text(
-                                    text = "Paid",
-                                    fontSize = 11.sp,
+                                    text = "Student Details",
+                                    fontSize = 13.sp,
                                     fontWeight = FontWeight.Bold,
-                                    color = Color(0xFF2E7D32)
+                                    color = DarkMaroonText
+                                )
+
+                                Spacer(modifier = Modifier.height(6.dp))
+
+                                Column(verticalArrangement = Arrangement.spacedBy(4.dp)) {
+                                    Row {
+                                        Text(text = "Student Name  : ", fontSize = 12.sp, color = MutedBodyText, modifier = Modifier.width(110.dp))
+                                        Text(text = uiState.studentName, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                    }
+                                    Row {
+                                        Text(text = "Student ID          : ", fontSize = 12.sp, color = MutedBodyText, modifier = Modifier.width(110.dp))
+                                        Text(text = uiState.studentId, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                    }
+                                    Row {
+                                        Text(text = "Class                   : ", fontSize = 12.sp, color = MutedBodyText, modifier = Modifier.width(110.dp))
+                                        Text(text = uiState.studentClass, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                    }
+                                    Row {
+                                        Text(text = "Fee Period         : ", fontSize = 12.sp, color = MutedBodyText, modifier = Modifier.width(110.dp))
+                                        Text(text = uiState.feePeriod, fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Itemized Table
+                                Card(
+                                    shape = RoundedCornerShape(12.dp),
+                                    colors = CardDefaults.cardColors(containerColor = Color(0xFFFAF6F2)),
+                                    border = BorderStroke(1.dp, CardBorder),
+                                    modifier = Modifier.fillMaxWidth()
+                                ) {
+                                    Column(modifier = Modifier.fillMaxWidth()) {
+                                        // Header Row
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color(0xFFF3ECE5))
+                                                .padding(horizontal = 14.dp, vertical = 8.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(text = "Description", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                            Text(text = "Amount (₹)", fontSize = 12.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                        }
+
+                                        // Item Row
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(text = "Monthly Fee", fontSize = 13.sp, color = DarkMaroonText)
+                                            Text(text = "3,000", fontSize = 13.sp, fontWeight = FontWeight.SemiBold, color = DarkMaroonText)
+                                        }
+
+                                        HorizontalDivider(color = CardBorder, thickness = 1.dp)
+
+                                        // Total Row
+                                        Row(
+                                            modifier = Modifier
+                                                .fillMaxWidth()
+                                                .background(Color(0xFFF3ECE5))
+                                                .padding(horizontal = 14.dp, vertical = 10.dp),
+                                            horizontalArrangement = Arrangement.SpaceBetween
+                                        ) {
+                                            Text(text = "Total Amount", fontSize = 13.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                            Text(text = "3,000", fontSize = 14.sp, fontWeight = FontWeight.Bold, color = DarkMaroonText)
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(20.dp))
+
+                                // Green Stamped PAID Box
+                                Box(
+                                    modifier = Modifier.fillMaxWidth(),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Row(
+                                        verticalAlignment = Alignment.CenterVertically,
+                                        horizontalArrangement = Arrangement.Center
+                                    ) {
+                                        Canvas(modifier = Modifier.size(24.dp)) {
+                                            val w = size.width
+                                            val h = size.height
+                                            drawLine(color = Color(0xFF00A651), start = Offset(0f, h / 2), end = Offset(w, h / 2), strokeWidth = 2.dp.toPx())
+                                        }
+
+                                        Spacer(modifier = Modifier.width(8.dp))
+
+                                        Box(
+                                            modifier = Modifier
+                                                .clip(RoundedCornerShape(8.dp))
+                                                .background(Color(0xFFE8F5E9))
+                                                .padding(horizontal = 20.dp, vertical = 8.dp),
+                                            contentAlignment = Alignment.Center
+                                        ) {
+                                            Text(
+                                                text = "PAID",
+                                                fontFamily = FontFamily.Serif,
+                                                fontSize = 18.sp,
+                                                fontWeight = FontWeight.Bold,
+                                                letterSpacing = 2.sp,
+                                                color = Color(0xFF00A651)
+                                            )
+                                        }
+
+                                        Spacer(modifier = Modifier.width(8.dp))
+
+                                        Canvas(modifier = Modifier.size(24.dp)) {
+                                            val w = size.width
+                                            val h = size.height
+                                            drawLine(color = Color(0xFF00A651), start = Offset(0f, h / 2), end = Offset(w, h / 2), strokeWidth = 2.dp.toPx())
+                                        }
+                                    }
+                                }
+
+                                Spacer(modifier = Modifier.height(16.dp))
+
+                                // Footer Thank You Note
+                                Text(
+                                    text = "Thank you for being a part of Nritya Hub!\nKeep dancing, keep growing!",
+                                    fontSize = 11.sp,
+                                    fontStyle = FontStyle.Italic,
+                                    textAlign = TextAlign.Center,
+                                    lineHeight = 16.sp,
+                                    color = MutedBodyText,
+                                    modifier = Modifier.fillMaxWidth()
                                 )
                             }
                         }
-
-                        if (index < uiState.paymentHistory.size - 1) {
-                            HorizontalDivider(
-                                color = CardBorder,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 18.dp)
-                            )
-                        }
                     }
-                }
-            }
 
-            Spacer(modifier = Modifier.height(16.dp))
+                    Spacer(modifier = Modifier.height(16.dp))
 
-            // Fee Alerts Notice Box
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape)
-                            .background(CardBackground),
-                        contentAlignment = Alignment.Center
+                    // Card 2: Unpaid / Outstanding Fee Status Card
+                    Card(
+                        shape = RoundedCornerShape(16.dp),
+                        colors = CardDefaults.cardColors(containerColor = Color(0xFFFAF6F2)),
+                        border = BorderStroke(1.dp, CardBorder),
+                        modifier = Modifier.fillMaxWidth()
                     ) {
-                        // Bell Icon
-                        Canvas(modifier = Modifier.size(14.dp)) {
-                            val w = size.width
-                            val h = size.height
-                            drawPath(
-                                path = Path().apply {
-                                    moveTo(w * 0.5f, 0f)
-                                    cubicTo(w * 0.2f, h * 0.1f, w * 0.1f, h * 0.5f, w * 0.1f, h * 0.75f)
-                                    lineTo(w * 0.9f, h * 0.75f)
-                                    cubicTo(w * 0.9f, h * 0.5f, w * 0.8f, h * 0.1f, w * 0.5f, 0f)
-                                },
-                                color = DeepPlum,
-                                style = Stroke(width = 1.5.dp.toPx())
+                        Column(
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .padding(16.dp)
+                        ) {
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                horizontalArrangement = Arrangement.SpaceBetween,
+                                verticalAlignment = Alignment.CenterVertically
+                            ) {
+                                Text(
+                                    text = "Fee Status",
+                                    fontSize = 14.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DarkMaroonText
+                                )
+
+                                Box(
+                                    modifier = Modifier
+                                        .background(Color(0xFFFFEBEE), shape = RoundedCornerShape(12.dp))
+                                        .padding(horizontal = 12.dp, vertical = 4.dp)
+                                ) {
+                                    Text(
+                                        text = "Not Paid",
+                                        fontSize = 11.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = Color(0xFFC62828)
+                                    )
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.height(10.dp))
+
+                            Text(
+                                text = uiState.outstandingFeeAmount,
+                                fontFamily = FontFamily.Serif,
+                                fontSize = 26.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
                             )
+
+                            Spacer(modifier = Modifier.height(2.dp))
+
+                            // Month shown directly under the amount
+                            Text(
+                                text = "${uiState.feePeriod} · Outstanding fee amount",
+                                fontSize = 12.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = MutedBodyText
+                            )
+
+                            Spacer(modifier = Modifier.height(16.dp))
+
+                            // Warning Dues Notice Box
+                            Row(
+                                modifier = Modifier.fillMaxWidth(),
+                                verticalAlignment = Alignment.Top
+                            ) {
+                                Canvas(modifier = Modifier.size(20.dp)) {
+                                    val r = size.width / 2
+                                    drawCircle(color = Color(0xFFC62828), radius = r, style = Stroke(width = 1.8.dp.toPx()))
+                                    drawLine(color = Color(0xFFC62828), start = Offset(r, r * 0.45f), end = Offset(r, r * 1.15f), strokeWidth = 2.dp.toPx(), cap = StrokeCap.Round)
+                                    drawCircle(color = Color(0xFFC62828), radius = 1.5.dp.toPx(), center = Offset(r, r * 1.5f))
+                                }
+
+                                Spacer(modifier = Modifier.width(10.dp))
+
+                                Column(modifier = Modifier.weight(1f)) {
+                                    Text(
+                                        text = uiState.clearDuesTitle,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = DarkMaroonText
+                                    )
+
+                                    Spacer(modifier = Modifier.height(2.dp))
+
+                                    Text(
+                                        text = uiState.clearDuesNotice,
+                                        fontSize = 12.sp,
+                                        lineHeight = 17.sp,
+                                        color = MutedBodyText
+                                    )
+                                }
+                            }
                         }
                     }
-
-                    Spacer(modifier = Modifier.width(10.dp))
-
-                    Text(
-                        text = uiState.alertNotice,
-                        fontSize = 12.sp,
-                        lineHeight = 17.sp,
-                        color = DeepPlum
-                    )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Footer Link
-            Text(
-                text = uiState.footerText,
-                fontSize = 12.sp,
-                color = MutedBodyText,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onContactOfficeClick() }
-            )
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -537,8 +697,7 @@ fun FeesInvoicesScreenPreview() {
     NritahubTheme {
         FeesInvoicesContent(
             uiState = FeesInvoicesUiState(),
-            onPayClick = {},
-            onContactOfficeClick = {},
+            onGenerateInvoiceClick = {},
             onBackClick = {}
         )
     }

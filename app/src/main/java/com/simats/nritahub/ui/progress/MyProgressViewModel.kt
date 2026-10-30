@@ -12,8 +12,8 @@ class MyProgressViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(MyProgressUiState())
     val uiState: StateFlow<MyProgressUiState> = _uiState.asStateFlow()
 
-    fun onTimeframeChanged(timeframe: ProgressTimeframe) {
-        _uiState.update { it.copy(timeframe = timeframe) }
+    fun onViewAttendanceHistoryClicked() {
+        _uiState.update { it.copy(navigationEvent = MyProgressNavigationEvent.ViewAttendanceHistory) }
     }
 
     fun onTabSelected(tab: HomeTab) {
@@ -22,10 +22,6 @@ class MyProgressViewModel : ViewModel() {
         } else {
             _uiState.update { it.copy(selectedTab = tab) }
         }
-    }
-
-    fun onExportReportClicked() {
-        _uiState.update { it.copy(navigationEvent = MyProgressNavigationEvent.ExportReport) }
     }
 
     fun onNavigationHandled() {

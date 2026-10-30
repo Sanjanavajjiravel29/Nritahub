@@ -2,7 +2,6 @@ package com.simats.nritahub.ui.events
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -20,8 +19,11 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
+import androidx.compose.material3.Button
+import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
+import androidx.compose.material3.HorizontalDivider
 import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
@@ -37,15 +39,11 @@ import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
-import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.simats.nritahub.R
 import com.simats.nritahub.ui.theme.CardBackground
 import com.simats.nritahub.ui.theme.CardBorder
 import com.simats.nritahub.ui.theme.CreamBackground
@@ -59,8 +57,7 @@ import com.simats.nritahub.ui.theme.SoftLavenderBadge
 @Composable
 fun EventsAnnouncementsScreen(
     viewModel: EventsAnnouncementsViewModel = remember { EventsAnnouncementsViewModel() },
-    onBackToPrevious: () -> Unit,
-    onNavigateToEventDetail: () -> Unit = {}
+    onBackToPrevious: () -> Unit
 ) {
     val uiState by viewModel.uiState.collectAsState()
 
@@ -70,12 +67,7 @@ fun EventsAnnouncementsScreen(
                 onBackToPrevious()
                 viewModel.onNavigationHandled()
             }
-            EventsAnnouncementsNavigationEvent.RegisterForRecital -> {
-                onNavigateToEventDetail()
-                viewModel.onNavigationHandled()
-            }
-            EventsAnnouncementsNavigationEvent.OpenEventDetail -> {
-                onNavigateToEventDetail()
+            EventsAnnouncementsNavigationEvent.WorkshopRegistered -> {
                 viewModel.onNavigationHandled()
             }
             EventsAnnouncementsNavigationEvent.None -> {}
@@ -84,9 +76,7 @@ fun EventsAnnouncementsScreen(
 
     EventsAnnouncementsContent(
         uiState = uiState,
-        onFilterSelect = viewModel::onFilterSelected,
-        onRegisterRecitalClick = viewModel::onRegisterRecitalClicked,
-        onEventClick = viewModel::onEventClicked,
+        onRegisterWorkshopClick = viewModel::onRegisterWorkshopClicked,
         onBackClick = viewModel::onBackClicked
     )
 }
@@ -94,9 +84,7 @@ fun EventsAnnouncementsScreen(
 @Composable
 fun EventsAnnouncementsContent(
     uiState: EventsAnnouncementsUiState,
-    onFilterSelect: (EventFilter) -> Unit,
-    onRegisterRecitalClick: () -> Unit,
-    onEventClick: () -> Unit,
+    onRegisterWorkshopClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -147,14 +135,6 @@ fun EventsAnnouncementsContent(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · EVENTS & ANNOUNCEMENTS",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -178,152 +158,125 @@ fun EventsAnnouncementsContent(
                 color = DarkMaroonText
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Category Filter Chips Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                EventFilter.entries.forEach { filter ->
-                    val isSelected = uiState.selectedFilter == filter
-                    val chipBg = if (isSelected) DeepPlum else Color(0xFFF3ECE5)
-                    val chipTextColor = if (isSelected) Color.White else DarkMaroonText
-                    val label = when (filter) {
-                        EventFilter.ALL -> "All"
-                        EventFilter.EVENTS -> "Events"
-                        EventFilter.WORKSHOPS -> "Workshops"
-                        EventFilter.UPDATES -> "Updates"
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(chipBg)
-                            .clickable { onFilterSelect(filter) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = chipTextColor
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Featured Event Card ("Autumn recital")
+            // Section 1: Workshop Specific Details Card
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBackground),
                 border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onRegisterRecitalClick() }
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    // Event Image Thumbnail
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .padding(8.dp)
-                            .clip(RoundedCornerShape(16.dp))
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(20.dp)
+                ) {
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.splash),
-                            contentDescription = "Autumn Recital",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
-                    ) {
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Box(
-                                modifier = Modifier
-                                    .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
-                                    .padding(horizontal = 10.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = uiState.featuredBadge,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 0.8.sp,
-                                    color = DeepPlum
-                                )
-                            }
-
-                            Text(
-                                text = uiState.featuredDate,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DarkMaroonText
-                            )
-                        }
-
-                        Spacer(modifier = Modifier.height(10.dp))
-
-                        Text(
-                            text = uiState.featuredTitle,
-                            fontFamily = FontFamily.Serif,
-                            fontSize = 24.sp,
-                            color = DarkMaroonText
-                        )
-
-                        Spacer(modifier = Modifier.height(4.dp))
-
-                        Text(
-                            text = uiState.featuredSubtitle,
-                            fontSize = 13.sp,
-                            lineHeight = 18.sp,
-                            color = MutedBodyText
-                        )
-
-                        Spacer(modifier = Modifier.height(12.dp))
-
-                        Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            modifier = Modifier.clickable { onRegisterRecitalClick() }
+                        Box(
+                            modifier = Modifier
+                                .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = "See details & register",
-                                fontSize = 13.sp,
+                                text = uiState.workshopBadge,
+                                fontSize = 10.sp,
                                 fontWeight = FontWeight.Bold,
+                                letterSpacing = 0.8.sp,
                                 color = DeepPlum
                             )
-                            Spacer(modifier = Modifier.width(6.dp))
-                            Canvas(modifier = Modifier.size(12.dp)) {
-                                val w = size.width
-                                val h = size.height
-                                val stroke = 1.5.dp.toPx()
-                                drawLine(color = DeepPlum, start = Offset(0f, h / 2), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                                drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.2f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                                drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.8f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                            }
                         }
+
+                        Box(
+                            modifier = Modifier
+                                .background(Color(0xFFE8F5E9), shape = RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = uiState.workshopFeeText,
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = Color(0xFF2E7D32)
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = uiState.workshopTitle,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 24.sp,
+                        color = DarkMaroonText
+                    )
+
+                    Spacer(modifier = Modifier.height(4.dp))
+
+                    Text(
+                        text = uiState.workshopInstructor,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = DeepPlum
+                    )
+
+                    Spacer(modifier = Modifier.height(10.dp))
+
+                    Text(
+                        text = uiState.workshopDateAndTime,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = DarkMaroonText
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = uiState.workshopVenue,
+                        fontSize = 12.sp,
+                        color = MutedBodyText
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = uiState.workshopDescription,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = MutedBodyText
+                    )
+
+                    Spacer(modifier = Modifier.height(16.dp))
+
+                    Button(
+                        onClick = onRegisterWorkshopClick,
+                        colors = ButtonDefaults.buttonColors(
+                            containerColor = DeepPlum,
+                            contentColor = Color.White
+                        ),
+                        shape = RoundedCornerShape(20.dp),
+                        modifier = Modifier
+                            .fillMaxWidth()
+                            .height(48.dp)
+                    ) {
+                        Text(
+                            text = if (uiState.isWorkshopRegistered) "Registered for Workshop ✓" else "Register for Workshop",
+                            fontSize = 14.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
                     }
                 }
             }
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // "Coming together" Section
+            // Section 2: Performance
             Text(
-                text = uiState.comingTogetherTitle,
+                text = "Performance",
                 fontFamily = FontFamily.Serif,
                 fontSize = 22.sp,
                 color = DarkMaroonText
@@ -331,124 +284,73 @@ fun EventsAnnouncementsContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Upcoming Events List Cards
-            uiState.upcomingEvents.forEach { event ->
-                Card(
-                    shape = RoundedCornerShape(20.dp),
-                    colors = CardDefaults.cardColors(containerColor = CardBackground),
-                    border = BorderStroke(1.dp, CardBorder),
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .clickable { onEventClick() }
-                ) {
-                    Row(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(16.dp),
-                        horizontalArrangement = Arrangement.SpaceBetween,
-                        verticalAlignment = Alignment.CenterVertically
-                    ) {
-                        Column(modifier = Modifier.weight(1f)) {
-                            val badgeBg = if (event.isExamination) Color(0xFFFDF3E5) else SoftLavenderBadge
-                            val badgeColor = if (event.isExamination) Color(0xFFA05C1C) else DeepPlum
-
-                            Box(
-                                modifier = Modifier
-                                    .background(badgeBg, shape = RoundedCornerShape(12.dp))
-                                    .padding(horizontal = 10.dp, vertical = 4.dp)
-                            ) {
-                                Text(
-                                    text = event.badge,
-                                    fontSize = 10.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    letterSpacing = 0.8.sp,
-                                    color = badgeColor
-                                )
-                            }
-
-                            Spacer(modifier = Modifier.height(8.dp))
-
-                            Text(
-                                text = event.title,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DarkMaroonText
-                            )
-
-                            Spacer(modifier = Modifier.height(2.dp))
-
-                            Text(
-                                text = event.subtitle,
-                                fontSize = 12.sp,
-                                color = MutedBodyText
-                            )
-                        }
-
-                        Canvas(modifier = Modifier.size(12.dp)) {
-                            val w = size.width
-                            val h = size.height
-                            val stroke = 1.5.dp.toPx()
-                            drawLine(color = DeepPlum, start = Offset(0f, 0f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                            drawLine(color = DeepPlum, start = Offset(w, h / 2), end = Offset(0f, h), strokeWidth = stroke, cap = StrokeCap.Round)
-                        }
-                    }
-                }
-
-                Spacer(modifier = Modifier.height(12.dp))
-            }
-
-            Spacer(modifier = Modifier.height(4.dp))
-
-            // Academy Update Notice Box
             Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                border = BorderStroke(1.dp, CardBorder),
                 modifier = Modifier.fillMaxWidth()
             ) {
-                Row(
+                Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(20.dp)
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(28.dp)
-                            .clip(CircleShape)
-                            .background(CardBackground),
-                        contentAlignment = Alignment.Center
+                            .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
+                            .padding(horizontal = 10.dp, vertical = 4.dp)
                     ) {
-                        // Megaphone / Announcement Icon
-                        Canvas(modifier = Modifier.size(14.dp)) {
-                            val w = size.width
-                            val h = size.height
-                            drawPath(
-                                path = Path().apply {
-                                    moveTo(0f, h * 0.35f)
-                                    lineTo(w * 0.4f, h * 0.35f)
-                                    lineTo(w * 0.85f, 0f)
-                                    lineTo(w * 0.85f, h)
-                                    lineTo(w * 0.4f, h * 0.65f)
-                                    lineTo(0f, h * 0.65f)
-                                    close()
-                                },
-                                color = DeepPlum
-                            )
-                        }
+                        Text(
+                            text = "UPCOMING SHOWCASE",
+                            fontSize = 10.sp,
+                            fontWeight = FontWeight.Bold,
+                            letterSpacing = 0.8.sp,
+                            color = DeepPlum
+                        )
                     }
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = uiState.academyUpdateNotice,
+                        text = uiState.performanceTitle,
+                        fontFamily = FontFamily.Serif,
+                        fontSize = 22.sp,
+                        color = DarkMaroonText
+                    )
+
+                    Spacer(modifier = Modifier.height(6.dp))
+
+                    Text(
+                        text = uiState.performanceDateAndTime,
+                        fontSize = 13.sp,
+                        fontWeight = FontWeight.SemiBold,
+                        color = DarkMaroonText
+                    )
+
+                    Spacer(modifier = Modifier.height(2.dp))
+
+                    Text(
+                        text = uiState.performanceVenue,
                         fontSize = 12.sp,
-                        lineHeight = 17.sp,
-                        color = DeepPlum
+                        color = MutedBodyText
+                    )
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    HorizontalDivider(color = CardBorder, thickness = 1.dp)
+
+                    Spacer(modifier = Modifier.height(12.dp))
+
+                    Text(
+                        text = uiState.performanceDescription,
+                        fontSize = 13.sp,
+                        lineHeight = 18.sp,
+                        color = MutedBodyText
                     )
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
             // Timezone Footer Note
             Text(
@@ -469,9 +371,7 @@ fun EventsAnnouncementsScreenPreview() {
     NritahubTheme {
         EventsAnnouncementsContent(
             uiState = EventsAnnouncementsUiState(),
-            onFilterSelect = {},
-            onRegisterRecitalClick = {},
-            onEventClick = {},
+            onRegisterWorkshopClick = {},
             onBackClick = {}
         )
     }

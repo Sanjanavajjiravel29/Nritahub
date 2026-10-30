@@ -12,12 +12,17 @@ class PracticeLibraryViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(PracticeLibraryUiState())
     val uiState: StateFlow<PracticeLibraryUiState> = _uiState.asStateFlow()
 
-    fun onSearchQueryChanged(query: String) {
-        _uiState.update { it.copy(searchQuery = query) }
+    fun toggleCheckItem(index: Int) {
+        _uiState.update { currentState ->
+            val updated = currentState.evaluationChecklist.mapIndexed { i, item ->
+                if (i == index) item.copy(isChecked = !item.isChecked) else item
+            }
+            currentState.copy(evaluationChecklist = updated)
+        }
     }
 
-    fun onCategorySelected(category: CategoryFilter) {
-        _uiState.update { it.copy(selectedCategory = category) }
+    fun onUploadHomeworkClicked() {
+        _uiState.update { it.copy(navigationEvent = PracticeLibraryNavigationEvent.UploadHomeworkVideo) }
     }
 
     fun onTabSelected(tab: HomeTab) {
@@ -28,12 +33,8 @@ class PracticeLibraryViewModel : ViewModel() {
         }
     }
 
-    fun onPlayFeaturedClicked() {
-        _uiState.update { it.copy(navigationEvent = PracticeLibraryNavigationEvent.PlayFeaturedVideo) }
-    }
-
-    fun onResourceClicked() {
-        _uiState.update { it.copy(navigationEvent = PracticeLibraryNavigationEvent.OpenResource) }
+    fun onReferenceClicked() {
+        _uiState.update { it.copy(navigationEvent = PracticeLibraryNavigationEvent.OpenReference) }
     }
 
     fun onNavigationHandled() {

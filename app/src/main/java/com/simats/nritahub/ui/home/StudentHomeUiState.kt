@@ -1,7 +1,7 @@
 package com.simats.nritahub.ui.home
 
 enum class HomeTab {
-    HOME, SCHEDULE, PRACTICE, PROGRESS, PROFILE
+    HOME, SCHEDULE, PRACTICE, PROGRESS
 }
 
 sealed interface StudentHomeNavigationEvent {
@@ -21,8 +21,8 @@ data class StudentHomeUiState(
     val nextClassBadge: String = "NEXT CLASS · TODAY",
     val nextClassDate: String = "Tue, 6 Oct",
     val nextClassTitle: String = "Find your rhythm",
-    val nextClassTimeAndStudio: String = "6:00–7:00 PM · Studio 2",
-    val nextClassInstructorAndTopic: String = "Meera Iyer · Tatta Adavu & posture",
+    val nextClassReminderText: String = "Reminder for today's class",
+    val nextClassNoteText: String = "Remember to bring your dance note, water bottle & practice uniform.",
     val sadhanaTitle: String = "Steady steps, softer landings",
     val sadhanaSubtitle: String = "Assigned by Meera · 20 min · Due 9 Oct",
     val attendancePercentage: String = "92%",

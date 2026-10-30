@@ -77,10 +77,6 @@ fun SubmitAssignmentScreen(
             SubmitAssignmentNavigationEvent.RemoveFileClicked -> {
                 viewModel.onNavigationHandled()
             }
-            SubmitAssignmentNavigationEvent.DraftSaved -> {
-                onBackToPrevious()
-                viewModel.onNavigationHandled()
-            }
             SubmitAssignmentNavigationEvent.SubmittedToInstructor -> {
                 onSubmitSuccess()
                 viewModel.onNavigationHandled()
@@ -96,7 +92,6 @@ fun SubmitAssignmentScreen(
         onChooseFileClick = viewModel::onChooseFileClicked,
         onRemoveFileClick = viewModel::onRemoveFileClicked,
         onSubmitClick = viewModel::onSubmitClicked,
-        onSaveDraftClick = viewModel::onSaveDraftClicked,
         onBackClick = viewModel::onBackClicked
     )
 }
@@ -109,7 +104,6 @@ fun SubmitAssignmentContent(
     onChooseFileClick: () -> Unit,
     onRemoveFileClick: () -> Unit,
     onSubmitClick: () -> Unit,
-    onSaveDraftClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -160,14 +154,6 @@ fun SubmitAssignmentContent(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · SUBMIT ASSIGNMENT",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -496,14 +482,14 @@ fun SubmitAssignmentContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // Primary Action Button ("Submit to Meera")
+            // Primary Action Button ("Submit to Meera" in Dark Maroon with Bold White Text)
             Button(
                 onClick = onSubmitClick,
                 colors = ButtonDefaults.buttonColors(
-                    containerColor = DeepPlum,
+                    containerColor = DarkMaroonText,
                     contentColor = Color.White
                 ),
-                shape = RoundedCornerShape(24.dp),
+                shape = RoundedCornerShape(26.dp),
                 modifier = Modifier
                     .fillMaxWidth()
                     .height(52.dp)
@@ -514,8 +500,9 @@ fun SubmitAssignmentContent(
                 ) {
                     Text(
                         text = uiState.submitButtonText,
-                        fontSize = 16.sp,
-                        fontWeight = FontWeight.SemiBold
+                        fontSize = 17.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color.White
                     )
                     Spacer(modifier = Modifier.width(8.dp))
                     // Send Paperplane Icon
@@ -536,30 +523,7 @@ fun SubmitAssignmentContent(
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Secondary Action Button ("Save draft")
-            OutlinedButton(
-                onClick = onSaveDraftClick,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = CardBackground,
-                    contentColor = DeepPlum
-                ),
-                border = BorderStroke(1.dp, CardBorder),
-                shape = RoundedCornerShape(24.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(52.dp)
-            ) {
-                Text(
-                    text = "Save draft",
-                    fontSize = 14.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = DeepPlum
-                )
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
         }
     }
 }
@@ -575,7 +539,6 @@ fun SubmitAssignmentScreenPreview() {
             onChooseFileClick = {},
             onRemoveFileClick = {},
             onSubmitClick = {},
-            onSaveDraftClick = {},
             onBackClick = {}
         )
     }

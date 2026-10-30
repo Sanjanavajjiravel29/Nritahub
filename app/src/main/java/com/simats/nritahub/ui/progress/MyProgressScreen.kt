@@ -19,11 +19,9 @@ import androidx.compose.foundation.rememberScrollState
 import androidx.compose.foundation.shape.CircleShape
 import androidx.compose.foundation.shape.RoundedCornerShape
 import androidx.compose.foundation.verticalScroll
-import androidx.compose.material3.ButtonDefaults
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -37,7 +35,6 @@ import androidx.compose.ui.draw.clip
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
-import androidx.compose.ui.graphics.drawscope.Stroke
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
@@ -72,7 +69,7 @@ fun MyProgressScreen(
                 onNavigateToHome()
                 viewModel.onNavigationHandled()
             }
-            MyProgressNavigationEvent.ExportReport -> {
+            MyProgressNavigationEvent.ViewAttendanceHistory -> {
                 onNavigateToAttendanceHistory()
                 viewModel.onNavigationHandled()
             }
@@ -82,26 +79,23 @@ fun MyProgressScreen(
 
     MyProgressContent(
         uiState = uiState,
-        onTimeframeChange = viewModel::onTimeframeChanged,
+        onViewAttendanceClick = viewModel::onViewAttendanceHistoryClicked,
         onTabSelect = { tab ->
             when (tab) {
                 HomeTab.HOME -> onNavigateToHome()
                 HomeTab.SCHEDULE -> onNavigateToSchedule()
                 HomeTab.PRACTICE -> onNavigateToPractice()
                 HomeTab.PROGRESS -> viewModel.onTabSelected(tab)
-                HomeTab.PROFILE -> onNavigateToProfile()
             }
-        },
-        onExportReportClick = viewModel::onExportReportClicked
+        }
     )
 }
 
 @Composable
 fun MyProgressContent(
     uiState: MyProgressUiState,
-    onTimeframeChange: (ProgressTimeframe) -> Unit,
-    onTabSelect: (HomeTab) -> Unit,
-    onExportReportClick: () -> Unit
+    onViewAttendanceClick: () -> Unit,
+    onTabSelect: (HomeTab) -> Unit
 ) {
     Scaffold(
         containerColor = CreamBackground,
@@ -182,14 +176,6 @@ fun MyProgressContent(
                             drawLine(color = DeepPlum, start = Offset(w * 0.75f, h * 0.45f), end = Offset(w * 0.75f, h * 0.9f), strokeWidth = 2f)
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · MY PROGRESS",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -213,121 +199,109 @@ fun MyProgressContent(
                 color = DarkMaroonText
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(6.dp))
 
-            // Timeframe Segmented Switch
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF3ECE5)),
-                modifier = Modifier.fillMaxWidth()
+            // Subtitle
+            Text(
+                text = uiState.subtitle,
+                fontSize = 13.sp,
+                color = MutedBodyText
+            )
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Section 1: Class Attendance Summary
+            Row(
+                modifier = Modifier.fillMaxWidth(),
+                horizontalArrangement = Arrangement.SpaceBetween,
+                verticalAlignment = Alignment.CenterVertically
             ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (uiState.timeframe == ProgressTimeframe.THIS_WEEK) DeepPlum else Color.Transparent)
-                            .clickable { onTimeframeChange(ProgressTimeframe.THIS_WEEK) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "This week",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (uiState.timeframe == ProgressTimeframe.THIS_WEEK) Color.White else DarkMaroonText
-                        )
-                    }
+                Text(
+                    text = "Class attendance summary",
+                    fontFamily = FontFamily.Serif,
+                    fontSize = 22.sp,
+                    color = DarkMaroonText
+                )
 
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (uiState.timeframe == ProgressTimeframe.THIS_MONTH) DeepPlum else Color.Transparent)
-                            .clickable { onTimeframeChange(ProgressTimeframe.THIS_MONTH) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "This month",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (uiState.timeframe == ProgressTimeframe.THIS_MONTH) Color.White else DarkMaroonText
-                        )
-                    }
+                Box(
+                    modifier = Modifier
+                        .background(Color(0xFFE8F5E9), shape = RoundedCornerShape(12.dp))
+                        .padding(horizontal = 10.dp, vertical = 4.dp)
+                ) {
+                    Text(
+                        text = "${uiState.attendancePercentage} · Excellent",
+                        fontSize = 10.sp,
+                        fontWeight = FontWeight.Bold,
+                        color = Color(0xFF2E7D32)
+                    )
                 }
             }
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            // Overview Subtitle
-            Text(
-                text = uiState.overviewSubtitle,
-                fontSize = 12.sp,
-                color = MutedBodyText
-            )
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Stats Grid Row (Attendance & Weekly Practice)
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 horizontalArrangement = Arrangement.spacedBy(12.dp)
             ) {
                 Card(
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = CardBackground),
                     border = BorderStroke(1.dp, CardBorder),
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = uiState.attendancePercentage,
+                            text = uiState.totalClassesAttended,
                             fontFamily = FontFamily.Serif,
-                            fontSize = 26.sp,
+                            fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             color = DarkMaroonText
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = uiState.attendanceLabel,
-                            fontSize = 11.sp,
+                            text = "Total classes attended",
+                            fontSize = 12.sp,
                             color = MutedBodyText
                         )
                     }
                 }
 
                 Card(
-                    shape = RoundedCornerShape(16.dp),
+                    shape = RoundedCornerShape(18.dp),
                     colors = CardDefaults.cardColors(containerColor = CardBackground),
                     border = BorderStroke(1.dp, CardBorder),
                     modifier = Modifier.weight(1f)
                 ) {
                     Column(modifier = Modifier.padding(16.dp)) {
                         Text(
-                            text = uiState.practiceWeeklyScore,
+                            text = uiState.totalSessionsInMonth,
                             fontFamily = FontFamily.Serif,
-                            fontSize = 26.sp,
+                            fontSize = 28.sp,
                             fontWeight = FontWeight.Bold,
                             color = DarkMaroonText
                         )
                         Spacer(modifier = Modifier.height(4.dp))
                         Text(
-                            text = uiState.practiceWeeklyLabel,
-                            fontSize = 11.sp,
+                            text = "Total month sessions",
+                            fontSize = 12.sp,
                             color = MutedBodyText
                         )
                     }
                 }
             }
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Practice Consistency Bar Chart Card
+            // Section 2: Practice Summary
+            Text(
+                text = "Practice summary",
+                fontFamily = FontFamily.Serif,
+                fontSize = 22.sp,
+                color = DarkMaroonText
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBackground),
@@ -344,75 +318,72 @@ fun MyProgressContent(
                         horizontalArrangement = Arrangement.SpaceBetween,
                         verticalAlignment = Alignment.CenterVertically
                     ) {
-                        Text(
-                            text = uiState.consistencyTitle,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkMaroonText
-                        )
+                        Column {
+                            Text(
+                                text = "Weekly practice score",
+                                fontSize = 12.sp,
+                                color = MutedBodyText
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = uiState.practiceWeeklyScore,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                        }
 
                         Box(
                             modifier = Modifier
-                                .background(Color(0xFFE8F5E9), shape = RoundedCornerShape(12.dp))
+                                .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
                                 .padding(horizontal = 10.dp, vertical = 4.dp)
                         ) {
                             Text(
-                                text = uiState.habitBadge,
+                                text = uiState.monthLabel,
                                 fontSize = 11.sp,
                                 fontWeight = FontWeight.Bold,
-                                color = Color(0xFF2E7D32)
+                                color = DeepPlum
                             )
                         }
                     }
 
-                    Spacer(modifier = Modifier.height(2.dp))
+                    Spacer(modifier = Modifier.height(12.dp))
+                    HorizontalDivider(color = CardBorder, thickness = 1.dp)
+                    Spacer(modifier = Modifier.height(12.dp))
 
-                    Text(
-                        text = uiState.consistencySubtitle,
-                        fontSize = 12.sp,
-                        color = MutedBodyText
-                    )
-
-                    Spacer(modifier = Modifier.height(24.dp))
-
-                    // 4-Bar Chart
                     Row(
                         modifier = Modifier.fillMaxWidth(),
-                        horizontalArrangement = Arrangement.SpaceAround,
-                        verticalAlignment = Alignment.Bottom
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
                     ) {
-                        uiState.weeklyBars.forEach { bar ->
-                            val barHeightDp = (bar.sessionCount * 22).dp
-                            val barBg = if (bar.isHighlighted) DeepPlum else SoftLavenderBadge
+                        Column {
+                            Text(
+                                text = "Total practice time",
+                                fontSize = 12.sp,
+                                color = MutedBodyText
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = uiState.totalPracticeTime,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                        }
 
-                            Column(
-                                horizontalAlignment = Alignment.CenterHorizontally
-                            ) {
-                                Text(
-                                    text = "${bar.sessionCount}",
-                                    fontSize = 12.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DarkMaroonText
-                                )
-
-                                Spacer(modifier = Modifier.height(6.dp))
-
-                                Box(
-                                    modifier = Modifier
-                                        .width(48.dp)
-                                        .height(barHeightDp)
-                                        .clip(RoundedCornerShape(10.dp))
-                                        .background(barBg)
-                                )
-
-                                Spacer(modifier = Modifier.height(8.dp))
-
-                                Text(
-                                    text = bar.weekLabel,
-                                    fontSize = 11.sp,
-                                    color = MutedBodyText
-                                )
-                            }
+                        Column(horizontalAlignment = Alignment.End) {
+                            Text(
+                                text = "Assignments submitted",
+                                fontSize = 12.sp,
+                                color = MutedBodyText
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = uiState.assignmentsSubmitted,
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DeepPlum
+                            )
                         }
                     }
                 }
@@ -420,9 +391,9 @@ fun MyProgressContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // "Skills taking shape" Section
+            // Section 3: Instructor Comment Box
             Text(
-                text = uiState.skillsTitle,
+                text = "Instructor feedback & comments",
                 fontFamily = FontFamily.Serif,
                 fontSize = 22.sp,
                 color = DarkMaroonText
@@ -430,73 +401,6 @@ fun MyProgressContent(
 
             Spacer(modifier = Modifier.height(12.dp))
 
-            Card(
-                shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground),
-                border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    uiState.skills.forEachIndexed { index, skill ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Text(
-                                text = skill.skillName,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = DarkMaroonText
-                            )
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = skill.status,
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DeepPlum
-                                )
-
-                                Spacer(modifier = Modifier.width(8.dp))
-
-                                Canvas(modifier = Modifier.size(16.dp)) {
-                                    val w = size.width
-                                    val h = size.height
-                                    when (skill.iconType) {
-                                        "note" -> {
-                                            drawCircle(color = DeepPlum, radius = 3f, center = Offset(w * 0.35f, h * 0.75f))
-                                            drawLine(color = DeepPlum, start = Offset(w * 0.45f, h * 0.75f), end = Offset(w * 0.45f, h * 0.2f), strokeWidth = 1.5.dp.toPx())
-                                        }
-                                        "plant" -> {
-                                            drawLine(color = DeepPlum, start = Offset(w * 0.5f, h), end = Offset(w * 0.5f, h * 0.2f), strokeWidth = 1.5.dp.toPx())
-                                            drawCircle(color = DeepPlum, radius = 3.5f, center = Offset(w * 0.3f, h * 0.4f))
-                                            drawCircle(color = DeepPlum, radius = 3.5f, center = Offset(w * 0.7f, h * 0.3f))
-                                        }
-                                        "hand" -> {
-                                            drawCircle(color = DeepPlum, radius = size.width * 0.35f, center = Offset(w * 0.5f, h * 0.5f), style = Stroke(width = 1.5.dp.toPx()))
-                                        }
-                                    }
-                                }
-                            }
-                        }
-
-                        if (index < uiState.skills.size - 1) {
-                            HorizontalDivider(
-                                color = CardBorder,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Instructor Feedback Note Box
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
@@ -510,14 +414,14 @@ fun MyProgressContent(
                     Row(verticalAlignment = Alignment.CenterVertically) {
                         Box(
                             modifier = Modifier
-                                .size(32.dp)
+                                .size(36.dp)
                                 .clip(CircleShape)
                                 .background(CardBackground),
                             contentAlignment = Alignment.Center
                         ) {
                             Text(
-                                text = uiState.instructorInitials,
-                                fontSize = 12.sp,
+                                text = "MI",
+                                fontSize = 13.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = DeepPlum
                             )
@@ -525,68 +429,29 @@ fun MyProgressContent(
 
                         Spacer(modifier = Modifier.width(10.dp))
 
-                        Text(
-                            text = uiState.instructorNoteTitle,
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkMaroonText
-                        )
+                        Column {
+                            Text(
+                                text = "${uiState.instructorName} · Instructor Feedback",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                            Text(
+                                text = "Edited & verified by instructor",
+                                fontSize = 11.sp,
+                                color = MutedBodyText
+                            )
+                        }
                     }
 
                     Spacer(modifier = Modifier.height(12.dp))
 
                     Text(
-                        text = uiState.instructorNoteQuote,
+                        text = uiState.instructorComment,
                         fontSize = 13.sp,
                         lineHeight = 18.sp,
-                        color = MutedBodyText
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Text(
-                        text = uiState.nextFocusText,
-                        fontSize = 13.sp,
-                        fontWeight = FontWeight.Bold,
                         color = DeepPlum
                     )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(20.dp))
-
-            // Export Progress Report Button
-            OutlinedButton(
-                onClick = onExportReportClick,
-                colors = ButtonDefaults.outlinedButtonColors(
-                    containerColor = CardBackground,
-                    contentColor = DeepPlum
-                ),
-                border = BorderStroke(1.dp, CardBorder),
-                shape = RoundedCornerShape(20.dp),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .height(50.dp)
-            ) {
-                Row(
-                    horizontalArrangement = Arrangement.Center,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    Text(
-                        text = "Export progress report",
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = DeepPlum
-                    )
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Canvas(modifier = Modifier.size(16.dp)) {
-                        val w = size.width
-                        val h = size.height
-                        drawLine(color = DeepPlum, start = Offset(w * 0.5f, 0f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                        drawLine(color = DeepPlum, start = Offset(w * 0.25f, h * 0.45f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                        drawLine(color = DeepPlum, start = Offset(w * 0.75f, h * 0.45f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                        drawLine(color = DeepPlum, start = Offset(0f, h), end = Offset(w, h), strokeWidth = 1.5.dp.toPx())
-                    }
                 }
             }
 
@@ -601,9 +466,8 @@ fun MyProgressScreenPreview() {
     NritahubTheme {
         MyProgressContent(
             uiState = MyProgressUiState(),
-            onTimeframeChange = {},
-            onTabSelect = {},
-            onExportReportClick = {}
+            onViewAttendanceClick = {},
+            onTabSelect = {}
         )
     }
 }

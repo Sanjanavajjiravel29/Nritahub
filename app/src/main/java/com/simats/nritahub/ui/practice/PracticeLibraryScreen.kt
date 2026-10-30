@@ -2,7 +2,6 @@ package com.simats.nritahub.ui.practice
 
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Canvas
-import androidx.compose.foundation.Image
 import androidx.compose.foundation.background
 import androidx.compose.foundation.clickable
 import androidx.compose.foundation.layout.Arrangement
@@ -23,8 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.OutlinedTextField
-import androidx.compose.material3.OutlinedTextFieldDefaults
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -35,19 +32,19 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
+import androidx.compose.ui.geometry.Rect
+import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
 import androidx.compose.ui.graphics.drawscope.Stroke
-import androidx.compose.ui.layout.ContentScale
-import androidx.compose.ui.res.painterResource
 import androidx.compose.ui.text.font.FontFamily
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.tooling.preview.Preview
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
-import com.simats.nritahub.R
 import com.simats.nritahub.ui.home.HomeTab
 import com.simats.nritahub.ui.home.TabIcon
 import com.simats.nritahub.ui.theme.CardBackground
@@ -77,11 +74,11 @@ fun PracticeLibraryScreen(
                 onNavigateToHome()
                 viewModel.onNavigationHandled()
             }
-            PracticeLibraryNavigationEvent.PlayFeaturedVideo -> {
+            PracticeLibraryNavigationEvent.OpenReference -> {
                 onNavigateToResourceDetail()
                 viewModel.onNavigationHandled()
             }
-            PracticeLibraryNavigationEvent.OpenResource -> {
+            PracticeLibraryNavigationEvent.UploadHomeworkVideo -> {
                 onNavigateToResourceDetail()
                 viewModel.onNavigationHandled()
             }
@@ -91,30 +88,27 @@ fun PracticeLibraryScreen(
 
     PracticeLibraryContent(
         uiState = uiState,
-        onSearchQueryChange = viewModel::onSearchQueryChanged,
-        onCategorySelect = viewModel::onCategorySelected,
+        onToggleCheckItem = viewModel::toggleCheckItem,
+        onUploadHomeworkClick = viewModel::onUploadHomeworkClicked,
         onTabSelect = { tab ->
             when (tab) {
                 HomeTab.HOME -> onNavigateToHome()
                 HomeTab.SCHEDULE -> onNavigateToSchedule()
                 HomeTab.PRACTICE -> viewModel.onTabSelected(tab)
                 HomeTab.PROGRESS -> onNavigateToProgress()
-                HomeTab.PROFILE -> onNavigateToProfile()
             }
         },
-        onPlayFeaturedClick = viewModel::onPlayFeaturedClicked,
-        onResourceClick = viewModel::onResourceClicked
+        onReferenceClick = viewModel::onReferenceClicked
     )
 }
 
 @Composable
 fun PracticeLibraryContent(
     uiState: PracticeLibraryUiState,
-    onSearchQueryChange: (String) -> Unit,
-    onCategorySelect: (CategoryFilter) -> Unit,
+    onToggleCheckItem: (Int) -> Unit,
+    onUploadHomeworkClick: () -> Unit,
     onTabSelect: (HomeTab) -> Unit,
-    onPlayFeaturedClick: () -> Unit,
-    onResourceClick: () -> Unit
+    onReferenceClick: () -> Unit
 ) {
     Scaffold(
         containerColor = CreamBackground,
@@ -195,14 +189,6 @@ fun PracticeLibraryContent(
                             drawLine(color = DeepPlum, start = Offset(w * 0.75f, h * 0.45f), end = Offset(w * 0.75f, h * 0.9f), strokeWidth = 2f)
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · PRACTICE LIBRARY",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -226,225 +212,68 @@ fun PracticeLibraryContent(
                 color = DarkMaroonText
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Find a resource Search Field
+            // Section 1: Practice Schedule
             Text(
-                text = "Find a resource",
-                fontSize = 12.sp,
-                fontWeight = FontWeight.Bold,
+                text = "Practice schedule",
+                fontFamily = FontFamily.Serif,
+                fontSize = 22.sp,
                 color = DarkMaroonText
             )
 
-            Spacer(modifier = Modifier.height(6.dp))
+            Spacer(modifier = Modifier.height(12.dp))
 
-            OutlinedTextField(
-                value = uiState.searchQuery,
-                onValueChange = onSearchQueryChange,
-                placeholder = { Text("Search videos, notes or exercises", fontSize = 13.sp, color = MutedBodyText) },
-                singleLine = true,
-                shape = RoundedCornerShape(16.dp),
-                colors = OutlinedTextFieldDefaults.colors(
-                    focusedContainerColor = CardBackground,
-                    unfocusedContainerColor = CardBackground,
-                    focusedBorderColor = DeepPlum,
-                    unfocusedBorderColor = CardBorder
-                ),
-                trailingIcon = {
-                    // Search Glass Icon
-                    Canvas(modifier = Modifier.size(16.dp)) {
-                        val w = size.width
-                        val h = size.height
-                        val r = w * 0.35f
-                        drawCircle(color = DeepPlum, radius = r, center = Offset(r, r), style = Stroke(width = 1.5.dp.toPx()))
-                        drawLine(color = DeepPlum, start = Offset(r * 1.7f, r * 1.7f), end = Offset(w, h), strokeWidth = 1.8.dp.toPx(), cap = StrokeCap.Round)
-                    }
-                },
-                modifier = Modifier.fillMaxWidth()
-            )
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Category Filter Chips Row 1
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.spacedBy(8.dp)
-            ) {
-                CategoryFilter.entries.forEach { category ->
-                    val isSelected = uiState.selectedCategory == category
-                    val chipBg = if (isSelected) DeepPlum else Color(0xFFF3ECE5)
-                    val chipTextColor = if (isSelected) Color.White else DarkMaroonText
-                    val label = when (category) {
-                        CategoryFilter.FOR_YOU -> "For you"
-                        CategoryFilter.VIDEOS -> "Videos"
-                        CategoryFilter.NOTES -> "Notes"
-                        CategoryFilter.SAVED -> "Saved"
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(14.dp))
-                            .background(chipBg)
-                            .clickable { onCategorySelect(category) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = label,
-                            fontSize = 12.sp,
-                            fontWeight = FontWeight.SemiBold,
-                            color = chipTextColor
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(10.dp))
-
-            // Style / Level Filter Chips Row 2
-            Row(horizontalArrangement = Arrangement.spacedBy(8.dp)) {
-                Box(
-                    modifier = Modifier
-                        .background(SoftLavenderBadge, shape = RoundedCornerShape(16.dp))
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = uiState.danceStyleFilter,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = DeepPlum
-                    )
-                }
-
-                Box(
-                    modifier = Modifier
-                        .background(SoftLavenderBadge, shape = RoundedCornerShape(16.dp))
-                        .padding(horizontal = 14.dp, vertical = 6.dp)
-                ) {
-                    Text(
-                        text = uiState.levelFilter,
-                        fontSize = 12.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = DeepPlum
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Featured Practice Video Card
             Card(
                 shape = RoundedCornerShape(20.dp),
                 colors = CardDefaults.cardColors(containerColor = CardBackground),
                 border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onPlayFeaturedClick() }
+                modifier = Modifier.fillMaxWidth()
             ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    // Video Thumbnail
-                    Box(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .height(180.dp)
-                            .padding(8.dp)
-                            .clip(RoundedCornerShape(16.dp))
-                    ) {
-                        Image(
-                            painter = painterResource(id = R.drawable.splash),
-                            contentDescription = "Practice Video",
-                            contentScale = ContentScale.Crop,
-                            modifier = Modifier.fillMaxSize()
-                        )
-                    }
-
-                    Column(
-                        modifier = Modifier
-                            .fillMaxWidth()
-                            .padding(horizontal = 16.dp, vertical = 12.dp)
-                    ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp)
+                ) {
+                    uiState.scheduleItems.forEachIndexed { index, item ->
                         Row(
-                            verticalAlignment = Alignment.CenterVertically,
-                            horizontalArrangement = Arrangement.spacedBy(8.dp)
+                            modifier = Modifier.fillMaxWidth(),
+                            horizontalArrangement = Arrangement.SpaceBetween,
+                            verticalAlignment = Alignment.CenterVertically
                         ) {
+                            Column(modifier = Modifier.weight(1f)) {
+                                Text(
+                                    text = item.title,
+                                    fontSize = 15.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DarkMaroonText
+                                )
+                                Spacer(modifier = Modifier.height(2.dp))
+                                Text(
+                                    text = item.detail,
+                                    fontSize = 13.sp,
+                                    color = MutedBodyText
+                                )
+                            }
+
                             Box(
                                 modifier = Modifier
                                     .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
                                     .padding(horizontal = 10.dp, vertical = 4.dp)
                             ) {
                                 Text(
-                                    text = uiState.featuredBadge,
-                                    fontSize = 10.sp,
+                                    text = "Assigned",
+                                    fontSize = 11.sp,
                                     fontWeight = FontWeight.Bold,
-                                    letterSpacing = 0.8.sp,
                                     color = DeepPlum
                                 )
                             }
-
-                            Text(
-                                text = uiState.featuredDuration,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = DarkMaroonText
-                            )
                         }
 
-                        Spacer(modifier = Modifier.height(8.dp))
-
-                        Text(
-                            text = uiState.featuredTitle,
-                            fontSize = 15.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = DarkMaroonText
-                        )
-
-                        Spacer(modifier = Modifier.height(2.dp))
-
-                        Text(
-                            text = uiState.featuredSubtitle,
-                            fontSize = 13.sp,
-                            color = MutedBodyText
-                        )
-
-                        Spacer(modifier = Modifier.height(14.dp))
-
-                        Row(
-                            modifier = Modifier.fillMaxWidth(),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = "Continue watching",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DarkMaroonText
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = uiState.watchProgressText,
-                                    fontSize = 12.sp,
-                                    color = MutedBodyText
-                                )
-                            }
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                Text(
-                                    text = "Play",
-                                    fontSize = 13.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DeepPlum
-                                )
-                                Spacer(modifier = Modifier.width(4.dp))
-                                Canvas(modifier = Modifier.size(12.dp)) {
-                                    val w = size.width
-                                    val h = size.height
-                                    val stroke = 1.5.dp.toPx()
-                                    drawLine(color = DeepPlum, start = Offset(0f, 0f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                                    drawLine(color = DeepPlum, start = Offset(w, h / 2), end = Offset(0f, h), strokeWidth = stroke, cap = StrokeCap.Round)
-                                }
-                            }
+                        if (index < uiState.scheduleItems.size - 1) {
+                            Spacer(modifier = Modifier.height(12.dp))
+                            HorizontalDivider(color = CardBorder, thickness = 1.dp)
+                            Spacer(modifier = Modifier.height(12.dp))
                         }
                     }
                 }
@@ -452,9 +281,9 @@ fun PracticeLibraryContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // "Build your foundation" Section
+            // Section 2: Reference Videos & Notes
             Text(
-                text = "Build your foundation",
+                text = "Reference videos & notes",
                 fontFamily = FontFamily.Serif,
                 fontSize = 22.sp,
                 color = DarkMaroonText
@@ -469,82 +298,94 @@ fun PracticeLibraryContent(
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Column(modifier = Modifier.fillMaxWidth()) {
-                    uiState.foundationResources.forEachIndexed { index, item ->
+                    uiState.referenceMaterials.forEachIndexed { index, material ->
                         Row(
                             modifier = Modifier
                                 .fillMaxWidth()
-                                .clickable { onResourceClick() }
+                                .clickable { onReferenceClick() }
                                 .padding(16.dp),
                             horizontalArrangement = Arrangement.SpaceBetween,
                             verticalAlignment = Alignment.CenterVertically
                         ) {
-                            Column {
-                                Text(
-                                    text = item.title,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DarkMaroonText
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = item.subtitle,
-                                    fontSize = 12.sp,
-                                    color = MutedBodyText
-                                )
-                            }
-
-                            Row(verticalAlignment = Alignment.CenterVertically) {
-                                if (item.type.isNotEmpty()) {
-                                    Text(
-                                        text = item.type,
-                                        fontSize = 12.sp,
-                                        fontWeight = FontWeight.Bold,
-                                        color = DeepPlum
-                                    )
-                                    Spacer(modifier = Modifier.width(6.dp))
-                                }
-
-                                Canvas(modifier = Modifier.size(16.dp)) {
-                                    val w = size.width
-                                    val h = size.height
-                                    when (item.iconType) {
-                                        "download" -> {
-                                            drawLine(color = DeepPlum, start = Offset(w * 0.5f, 0f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                                            drawLine(color = DeepPlum, start = Offset(w * 0.25f, h * 0.45f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                                            drawLine(color = DeepPlum, start = Offset(w * 0.75f, h * 0.45f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                                            drawLine(color = DeepPlum, start = Offset(0f, h), end = Offset(w, h), strokeWidth = 1.5.dp.toPx())
-                                        }
-                                        "check" -> {
+                            Row(
+                                verticalAlignment = Alignment.CenterVertically,
+                                modifier = Modifier.weight(1f)
+                            ) {
+                                Box(
+                                    modifier = Modifier
+                                        .size(36.dp)
+                                        .clip(CircleShape)
+                                        .background(SoftLavenderBadge),
+                                    contentAlignment = Alignment.Center
+                                ) {
+                                    Canvas(modifier = Modifier.size(16.dp)) {
+                                        val w = size.width
+                                        val h = size.height
+                                        if (material.isVideo) {
                                             drawPath(
                                                 path = Path().apply {
-                                                    moveTo(0f, h * 0.5f)
-                                                    lineTo(w * 0.35f, h * 0.85f)
-                                                    lineTo(w, h * 0.2f)
-                                                },
-                                                color = DeepPlum,
-                                                style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round)
-                                            )
-                                        }
-                                        "audio" -> {
-                                            drawPath(
-                                                path = Path().apply {
-                                                    moveTo(0f, h * 0.6f)
-                                                    lineTo(w * 0.3f, h * 0.6f)
-                                                    lineTo(w * 0.6f, h)
-                                                    lineTo(w * 0.6f, 0f)
-                                                    lineTo(w * 0.3f, h * 0.4f)
-                                                    lineTo(0f, h * 0.4f)
+                                                    moveTo(w * 0.35f, h * 0.2f)
+                                                    lineTo(w * 0.8f, h * 0.5f)
+                                                    lineTo(w * 0.35f, h * 0.8f)
                                                     close()
                                                 },
                                                 color = DeepPlum
                                             )
+                                        } else {
+                                            drawPath(
+                                                path = Path().apply {
+                                                    addRoundRect(
+                                                        RoundRect(
+                                                            rect = Rect(0f, 0f, w, h),
+                                                            cornerRadius = CornerRadius(3f, 3f)
+                                                        )
+                                                    )
+                                                },
+                                                color = DeepPlum,
+                                                style = Stroke(width = 1.5.dp.toPx())
+                                            )
                                         }
                                     }
+                                }
+
+                                Spacer(modifier = Modifier.width(12.dp))
+
+                                Column {
+                                    Text(
+                                        text = material.title,
+                                        fontSize = 14.sp,
+                                        fontWeight = FontWeight.Bold,
+                                        color = DarkMaroonText
+                                    )
+                                    Spacer(modifier = Modifier.height(2.dp))
+                                    Text(
+                                        text = material.typeLabel,
+                                        fontSize = 12.sp,
+                                        color = MutedBodyText
+                                    )
+                                }
+                            }
+
+                            Row(verticalAlignment = Alignment.CenterVertically) {
+                                Text(
+                                    text = if (material.isVideo) "Open" else "View",
+                                    fontSize = 13.sp,
+                                    fontWeight = FontWeight.Bold,
+                                    color = DeepPlum
+                                )
+                                Spacer(modifier = Modifier.width(4.dp))
+                                Canvas(modifier = Modifier.size(12.dp)) {
+                                    val w = size.width
+                                    val h = size.height
+                                    val stroke = 1.5.dp.toPx()
+                                    drawLine(color = DeepPlum, start = Offset(0f, h / 2), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
+                                    drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.2f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
+                                    drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.8f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
                                 }
                             }
                         }
 
-                        if (index < uiState.foundationResources.size - 1) {
+                        if (index < uiState.referenceMaterials.size - 1) {
                             HorizontalDivider(
                                 color = CardBorder,
                                 thickness = 1.dp,
@@ -555,9 +396,183 @@ fun PracticeLibraryContent(
                 }
             }
 
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Section 3: Upload Your Homework Videos
+            Text(
+                text = uiState.uploadHomeworkTitle,
+                fontFamily = FontFamily.Serif,
+                fontSize = 22.sp,
+                color = DarkMaroonText
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = uiState.uploadHomeworkSubtitle,
+                fontSize = 12.sp,
+                color = MutedBodyText
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
+                modifier = Modifier
+                    .fillMaxWidth()
+                    .clickable { onUploadHomeworkClick() }
+            ) {
+                Row(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp),
+                    verticalAlignment = Alignment.CenterVertically,
+                    horizontalArrangement = Arrangement.SpaceBetween
+                ) {
+                    Row(verticalAlignment = Alignment.CenterVertically) {
+                        Box(
+                            modifier = Modifier
+                                .size(40.dp)
+                                .clip(CircleShape)
+                                .background(CardBackground),
+                            contentAlignment = Alignment.Center
+                        ) {
+                            Canvas(modifier = Modifier.size(20.dp)) {
+                                val w = size.width
+                                val h = size.height
+                                drawPath(
+                                    path = Path().apply {
+                                        addRoundRect(
+                                            RoundRect(
+                                                rect = Rect(0f, h * 0.2f, w * 0.7f, h * 0.8f),
+                                                cornerRadius = CornerRadius(4f, 4f)
+                                            )
+                                        )
+                                        moveTo(w * 0.7f, h * 0.4f)
+                                        lineTo(w, h * 0.25f)
+                                        lineTo(w, h * 0.75f)
+                                        lineTo(w * 0.7f, h * 0.6f)
+                                        close()
+                                    },
+                                    color = DeepPlum
+                                )
+                            }
+                        }
+
+                        Spacer(modifier = Modifier.width(12.dp))
+
+                        Column {
+                            Text(
+                                text = "Record or select video",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "MP4, MOV · Up to 50 MB",
+                                fontSize = 12.sp,
+                                color = MutedBodyText
+                            )
+                        }
+                    }
+
+                    Box(
+                        modifier = Modifier
+                            .background(DeepPlum, shape = RoundedCornerShape(14.dp))
+                            .padding(horizontal = 14.dp, vertical = 8.dp)
+                    ) {
+                        Text(
+                            text = "Upload",
+                            fontSize = 12.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = Color.White
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // Section 4: Instructor Evaluation
+            Text(
+                text = uiState.evaluationTitle,
+                fontFamily = FontFamily.Serif,
+                fontSize = 22.sp,
+                color = DarkMaroonText
+            )
+
+            Spacer(modifier = Modifier.height(4.dp))
+
+            Text(
+                text = "Evaluated & filled by your instructor (${uiState.instructorName})",
+                fontSize = 12.sp,
+                color = MutedBodyText
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF3ECE5)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp)
+                ) {
+                    uiState.evaluationChecklist.forEachIndexed { index, item ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onToggleCheckItem(index) }
+                                .padding(vertical = 6.dp)
+                        ) {
+                            Canvas(modifier = Modifier.size(20.dp)) {
+                                val r = size.width / 2
+                                if (item.isChecked) {
+                                    drawCircle(color = Color(0xFF2E7D32), radius = r)
+                                    drawPath(
+                                        path = Path().apply {
+                                            moveTo(r * 0.5f, r)
+                                            lineTo(r * 0.85f, r * 1.35f)
+                                            lineTo(r * 1.5f, r * 0.65f)
+                                        },
+                                        color = Color.White,
+                                        style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round)
+                                    )
+                                } else {
+                                    drawCircle(color = CardBorder, radius = r, style = Stroke(width = 1.5.dp.toPx()))
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Text(
+                                text = item.criteriaName,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                        }
+
+                        if (index < uiState.evaluationChecklist.size - 1) {
+                            HorizontalDivider(
+                                color = CardBorder,
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                    }
+                }
+            }
+
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Offline Resources Notice Box
+            // Instructor Comment Box
             Card(
                 shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
@@ -567,7 +582,7 @@ fun PracticeLibraryContent(
                     modifier = Modifier
                         .fillMaxWidth()
                         .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                    verticalAlignment = Alignment.Top
                 ) {
                     Box(
                         modifier = Modifier
@@ -579,33 +594,34 @@ fun PracticeLibraryContent(
                         Canvas(modifier = Modifier.size(14.dp)) {
                             val w = size.width
                             val h = size.height
-                            drawLine(color = DeepPlum, start = Offset(w * 0.5f, 0f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                            drawLine(color = DeepPlum, start = Offset(w * 0.25f, h * 0.45f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                            drawLine(color = DeepPlum, start = Offset(w * 0.75f, h * 0.45f), end = Offset(w * 0.5f, h * 0.7f), strokeWidth = 1.5.dp.toPx())
-                            drawLine(color = DeepPlum, start = Offset(0f, h), end = Offset(w, h), strokeWidth = 1.5.dp.toPx())
+                            drawPath(
+                                path = Path().apply {
+                                    addRoundRect(
+                                        RoundRect(
+                                            rect = Rect(0f, 0f, w, h * 0.75f),
+                                            cornerRadius = CornerRadius(6f, 6f)
+                                        )
+                                    )
+                                    moveTo(w * 0.2f, h * 0.75f)
+                                    lineTo(w * 0.1f, h)
+                                    lineTo(w * 0.4f, h * 0.75f)
+                                },
+                                color = DeepPlum,
+                                style = Stroke(width = 1.5.dp.toPx())
+                            )
                         }
                     }
 
                     Spacer(modifier = Modifier.width(10.dp))
 
                     Text(
-                        text = uiState.offlineNotice,
+                        text = uiState.instructorComment,
                         fontSize = 12.sp,
                         lineHeight = 17.sp,
                         color = DeepPlum
                     )
                 }
             }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Footer Link
-            Text(
-                text = uiState.exploreStylesText,
-                fontSize = 12.sp,
-                color = MutedBodyText,
-                modifier = Modifier.fillMaxWidth()
-            )
 
             Spacer(modifier = Modifier.height(20.dp))
         }
@@ -618,11 +634,10 @@ fun PracticeLibraryScreenPreview() {
     NritahubTheme {
         PracticeLibraryContent(
             uiState = PracticeLibraryUiState(),
-            onSearchQueryChange = {},
-            onCategorySelect = {},
+            onToggleCheckItem = {},
+            onUploadHomeworkClick = {},
             onTabSelect = {},
-            onPlayFeaturedClick = {},
-            onResourceClick = {}
+            onReferenceClick = {}
         )
     }
 }

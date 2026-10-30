@@ -1,47 +1,24 @@
 package com.simats.nritahub.ui.fees
 
-data class InvoiceItem(
-    val title: String,
-    val invoiceIdAndDate: String,
-    val studentAndPlan: String,
-    val amountText: String,
-    val isPending: Boolean
-)
-
-data class PaymentHistoryItem(
-    val title: String,
-    val invoiceIdAndDate: String,
-    val amountText: String,
-    val isPaid: Boolean
-)
-
 sealed interface FeesInvoicesNavigationEvent {
     data object None : FeesInvoicesNavigationEvent
     data object NavigateBack : FeesInvoicesNavigationEvent
-    data object ProcessPayment : FeesInvoicesNavigationEvent
-    data object ContactOffice : FeesInvoicesNavigationEvent
 }
 
 data class FeesInvoicesUiState(
-    val headerNumber: String = "16",
-    val title: String = "Fees, made clear",
-    val outstandingBalanceText: String = "₹2,400",
-    val dueDateBadgeText: String = "Due 10 Oct",
-    val balanceSubtitle: String = "October tuition · Bharatanatyam F1",
-    val payButtonText: String = "Pay ₹2,400",
-    val currentInvoice: InvoiceItem = InvoiceItem(
-        title = "October 2026 tuition",
-        invoiceIdAndDate = "INV-1026-041 · Issued 1 Oct",
-        studentAndPlan = "Ananya Rao · Monthly plan",
-        amountText = "₹2,400",
-        isPending = true
-    ),
-    val paymentHistory: List<PaymentHistoryItem> = listOf(
-        PaymentHistoryItem("September tuition", "INV-0926-041 · Paid 8 Sep", "₹2,400", true),
-        PaymentHistoryItem("August tuition", "INV-0826-041 · Paid 8 Aug", "₹2,400", true)
-    ),
-    val alertNotice: String = "We'll remind you before your due date. You can manage fee alerts in notification preferences.",
-    val footerText: String = "Questions about your invoice? Contact office",
+    val title: String = "Fee Details",
+    val subtitle: String = "STUDENT VIEW · SAMPLE",
+    val studentName: String = "Ananya Sharma",
+    val studentId: String = "STU001",
+    val studentClass: String = "Bharatanatyam – Beginner",
+    val feePeriod: String = "October 2026",
+    val paymentDate: String = "15 Oct 2026",
+    val invoiceNo: String = "NH2026-1015",
+    val paidFeeAmount: String = "₹ 3,000",
+    val outstandingFeeAmount: String = "₹ 3,000",
+    val isInvoiceGenerated: Boolean = false,
+    val clearDuesTitle: String = "Clear your fee dues",
+    val clearDuesNotice: String = "Your fee payment has not yet been confirmed. Please contact your teacher or academy administrator.",
     val isLoading: Boolean = false,
     val errorMessage: String? = null,
     val navigationEvent: FeesInvoicesNavigationEvent = FeesInvoicesNavigationEvent.None

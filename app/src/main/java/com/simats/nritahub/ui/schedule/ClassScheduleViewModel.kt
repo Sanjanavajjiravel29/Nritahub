@@ -12,16 +12,12 @@ class ClassScheduleViewModel : ViewModel() {
     private val _uiState = MutableStateFlow(ClassScheduleUiState())
     val uiState: StateFlow<ClassScheduleUiState> = _uiState.asStateFlow()
 
-    fun onViewModeChanged(mode: ScheduleViewMode) {
-        _uiState.update { it.copy(viewMode = mode) }
-    }
-
-    fun onDaySelected(dayNumber: String) {
+    fun toggleCheckItem(index: Int) {
         _uiState.update { currentState ->
-            val updatedDays = currentState.days.map { day ->
-                day.copy(isSelected = day.dayNumber == dayNumber)
+            val updated = currentState.checklistItems.mapIndexed { i, item ->
+                if (i == index) item.copy(isChecked = !item.isChecked) else item
             }
-            currentState.copy(days = updatedDays)
+            currentState.copy(checklistItems = updated)
         }
     }
 

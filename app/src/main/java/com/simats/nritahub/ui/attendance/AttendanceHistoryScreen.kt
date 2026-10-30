@@ -51,7 +51,6 @@ import com.simats.nritahub.ui.theme.CardBorder
 import com.simats.nritahub.ui.theme.CreamBackground
 import com.simats.nritahub.ui.theme.DarkMaroonText
 import com.simats.nritahub.ui.theme.DeepPlum
-import com.simats.nritahub.ui.theme.MediumMaroonText
 import com.simats.nritahub.ui.theme.MutedBodyText
 import com.simats.nritahub.ui.theme.NritahubTheme
 import com.simats.nritahub.ui.theme.SoftLavenderBadge
@@ -69,17 +68,12 @@ fun AttendanceHistoryScreen(
                 onBackToPrevious()
                 viewModel.onNavigationHandled()
             }
-            AttendanceHistoryNavigationEvent.ViewAllRecords -> {
-                viewModel.onNavigationHandled()
-            }
             AttendanceHistoryNavigationEvent.None -> {}
         }
     }
 
     AttendanceHistoryContent(
         uiState = uiState,
-        onMonthSelect = viewModel::onMonthSelected,
-        onViewAllClick = viewModel::onViewAllClicked,
         onBackClick = viewModel::onBackClicked
     )
 }
@@ -87,8 +81,6 @@ fun AttendanceHistoryScreen(
 @Composable
 fun AttendanceHistoryContent(
     uiState: AttendanceHistoryUiState,
-    onMonthSelect: (AttendanceMonth) -> Unit,
-    onViewAllClick: () -> Unit,
     onBackClick: () -> Unit
 ) {
     Scaffold(
@@ -101,7 +93,7 @@ fun AttendanceHistoryContent(
                 .verticalScroll(rememberScrollState())
                 .padding(horizontal = 20.dp, vertical = 12.dp)
         ) {
-            // Header Bar
+            // Header Bar with Back Button only
             Row(
                 modifier = Modifier.fillMaxWidth(),
                 verticalAlignment = Alignment.CenterVertically,
@@ -139,14 +131,6 @@ fun AttendanceHistoryContent(
                             )
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · ATTENDANCE HISTORY",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -154,9 +138,9 @@ fun AttendanceHistoryContent(
                     val r = 1.8.dp.toPx()
                     val centerY = size.height / 2
                     val w = size.width
-                    drawCircle(color = MediumMaroonText, radius = r, center = Offset(w * 0.2f, centerY))
-                    drawCircle(color = MediumMaroonText, radius = r, center = Offset(w * 0.5f, centerY))
-                    drawCircle(color = MediumMaroonText, radius = r, center = Offset(w * 0.8f, centerY))
+                    drawCircle(color = DeepPlum, radius = r, center = Offset(w * 0.2f, centerY))
+                    drawCircle(color = DeepPlum, radius = r, center = Offset(w * 0.5f, centerY))
+                    drawCircle(color = DeepPlum, radius = r, center = Offset(w * 0.8f, centerY))
                 }
             }
 
@@ -212,55 +196,6 @@ fun AttendanceHistoryContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // Month Segmented Switch
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF3ECE5)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (uiState.selectedMonth == AttendanceMonth.SEPTEMBER) DeepPlum else Color.Transparent)
-                            .clickable { onMonthSelect(AttendanceMonth.SEPTEMBER) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "September",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (uiState.selectedMonth == AttendanceMonth.SEPTEMBER) Color.White else DarkMaroonText
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (uiState.selectedMonth == AttendanceMonth.OCTOBER) DeepPlum else Color.Transparent)
-                            .clickable { onMonthSelect(AttendanceMonth.OCTOBER) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "October",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (uiState.selectedMonth == AttendanceMonth.OCTOBER) Color.White else DarkMaroonText
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
             // Attendance Breakdown Chips Row
             Row(
                 modifier = Modifier.fillMaxWidth(),
@@ -311,7 +246,7 @@ fun AttendanceHistoryContent(
 
             Spacer(modifier = Modifier.height(16.dp))
 
-            // "Recent class records" Section
+            // September Class Records Section
             Text(
                 text = uiState.recordsTitle,
                 fontFamily = FontFamily.Serif,
@@ -379,32 +314,6 @@ fun AttendanceHistoryContent(
                             )
                         }
                     }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // View All Link
-            Row(
-                verticalAlignment = Alignment.CenterVertically,
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onViewAllClick() }
-            ) {
-                Text(
-                    text = uiState.viewAllText,
-                    fontSize = 13.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = DeepPlum
-                )
-                Spacer(modifier = Modifier.width(6.dp))
-                Canvas(modifier = Modifier.size(12.dp)) {
-                    val w = size.width
-                    val h = size.height
-                    val stroke = 1.5.dp.toPx()
-                    drawLine(color = DeepPlum, start = Offset(0f, h / 2), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                    drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.2f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                    drawLine(color = DeepPlum, start = Offset(w * 0.6f, h * 0.8f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
                 }
             }
 
@@ -483,8 +392,6 @@ fun AttendanceHistoryScreenPreview() {
     NritahubTheme {
         AttendanceHistoryContent(
             uiState = AttendanceHistoryUiState(),
-            onMonthSelect = {},
-            onViewAllClick = {},
             onBackClick = {}
         )
     }

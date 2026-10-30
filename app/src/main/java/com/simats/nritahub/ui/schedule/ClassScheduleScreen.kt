@@ -22,7 +22,6 @@ import androidx.compose.foundation.verticalScroll
 import androidx.compose.material3.Card
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.HorizontalDivider
-import androidx.compose.material3.IconButton
 import androidx.compose.material3.Scaffold
 import androidx.compose.material3.Text
 import androidx.compose.runtime.Composable
@@ -33,10 +32,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.clip
-import androidx.compose.ui.geometry.CornerRadius
 import androidx.compose.ui.geometry.Offset
-import androidx.compose.ui.geometry.Rect
-import androidx.compose.ui.geometry.RoundRect
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.Path
 import androidx.compose.ui.graphics.StrokeCap
@@ -53,7 +49,6 @@ import com.simats.nritahub.ui.theme.CardBorder
 import com.simats.nritahub.ui.theme.CreamBackground
 import com.simats.nritahub.ui.theme.DarkMaroonText
 import com.simats.nritahub.ui.theme.DeepPlum
-import com.simats.nritahub.ui.theme.MediumMaroonText
 import com.simats.nritahub.ui.theme.MutedBodyText
 import com.simats.nritahub.ui.theme.NritahubTheme
 import com.simats.nritahub.ui.theme.SoftLavenderBadge
@@ -85,28 +80,23 @@ fun ClassScheduleScreen(
 
     ClassScheduleContent(
         uiState = uiState,
-        onViewModeChange = viewModel::onViewModeChanged,
-        onDaySelect = viewModel::onDaySelected,
+        onToggleCheckItem = viewModel::toggleCheckItem,
         onTabSelect = { tab ->
             when (tab) {
                 HomeTab.HOME -> onNavigateToHome()
                 HomeTab.SCHEDULE -> viewModel.onTabSelected(tab)
                 HomeTab.PRACTICE -> onNavigateToPractice()
                 HomeTab.PROGRESS -> onNavigateToProgress()
-                HomeTab.PROFILE -> onNavigateToProfile()
             }
-        },
-        onClassClick = viewModel::onClassClicked
+        }
     )
 }
 
 @Composable
 fun ClassScheduleContent(
     uiState: ClassScheduleUiState,
-    onViewModeChange: (ScheduleViewMode) -> Unit,
-    onDaySelect: (String) -> Unit,
-    onTabSelect: (HomeTab) -> Unit,
-    onClassClick: () -> Unit
+    onToggleCheckItem: (Int) -> Unit,
+    onTabSelect: (HomeTab) -> Unit
 ) {
     Scaffold(
         containerColor = CreamBackground,
@@ -187,14 +177,6 @@ fun ClassScheduleContent(
                             drawLine(color = DeepPlum, start = Offset(w * 0.75f, h * 0.45f), end = Offset(w * 0.75f, h * 0.9f), strokeWidth = 2f)
                         }
                     }
-                    Spacer(modifier = Modifier.width(8.dp))
-                    Text(
-                        text = "${uiState.headerNumber} / NRITYAHUB · CLASS SCHEDULE",
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        letterSpacing = 0.8.sp,
-                        color = MediumMaroonText
-                    )
                 }
 
                 // Three dots trailing icon
@@ -202,13 +184,13 @@ fun ClassScheduleContent(
                     val r = 1.8.dp.toPx()
                     val centerY = size.height / 2
                     val w = size.width
-                    drawCircle(color = MediumMaroonText, radius = r, center = Offset(w * 0.2f, centerY))
-                    drawCircle(color = MediumMaroonText, radius = r, center = Offset(w * 0.5f, centerY))
-                    drawCircle(color = MediumMaroonText, radius = r, center = Offset(w * 0.8f, centerY))
+                    drawCircle(color = DeepPlum, radius = r, center = Offset(w * 0.2f, centerY))
+                    drawCircle(color = DeepPlum, radius = r, center = Offset(w * 0.5f, centerY))
+                    drawCircle(color = DeepPlum, radius = r, center = Offset(w * 0.8f, centerY))
                 }
             }
 
-            Spacer(modifier = Modifier.height(12.dp))
+            Spacer(modifier = Modifier.height(16.dp))
 
             // Main Title
             Text(
@@ -218,217 +200,21 @@ fun ClassScheduleContent(
                 color = DarkMaroonText
             )
 
-            Spacer(modifier = Modifier.height(16.dp))
+            Spacer(modifier = Modifier.height(20.dp))
 
-            // Date Range Header Row
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                verticalAlignment = Alignment.CenterVertically,
-                horizontalArrangement = Arrangement.SpaceBetween
-            ) {
-                IconButton(onClick = {}, modifier = Modifier.size(24.dp)) {
-                    Canvas(modifier = Modifier.size(12.dp)) {
-                        val w = size.width
-                        val h = size.height
-                        val stroke = 1.8.dp.toPx()
-                        drawLine(color = DarkMaroonText, start = Offset(w, 0f), end = Offset(0f, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                        drawLine(color = DarkMaroonText, start = Offset(0f, h / 2), end = Offset(w, h), strokeWidth = stroke, cap = StrokeCap.Round)
-                    }
-                }
-
-                Text(
-                    text = uiState.dateRangeText,
-                    fontFamily = FontFamily.Serif,
-                    fontSize = 22.sp,
-                    color = DarkMaroonText
-                )
-
-                IconButton(onClick = {}, modifier = Modifier.size(24.dp)) {
-                    Canvas(modifier = Modifier.size(12.dp)) {
-                        val w = size.width
-                        val h = size.height
-                        val stroke = 1.8.dp.toPx()
-                        drawLine(color = DarkMaroonText, start = Offset(0f, 0f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                        drawLine(color = DarkMaroonText, start = Offset(w, h / 2), end = Offset(0f, h), strokeWidth = stroke, cap = StrokeCap.Round)
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // Week / Day Toggle Switch
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF3ECE5)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(4.dp)
-                ) {
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (uiState.viewMode == ScheduleViewMode.WEEK) DeepPlum else Color.Transparent)
-                            .clickable { onViewModeChange(ScheduleViewMode.WEEK) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Week",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (uiState.viewMode == ScheduleViewMode.WEEK) Color.White else DarkMaroonText
-                        )
-                    }
-
-                    Box(
-                        modifier = Modifier
-                            .weight(1f)
-                            .clip(RoundedCornerShape(12.dp))
-                            .background(if (uiState.viewMode == ScheduleViewMode.DAY) DeepPlum else Color.Transparent)
-                            .clickable { onViewModeChange(ScheduleViewMode.DAY) }
-                            .padding(vertical = 10.dp),
-                        contentAlignment = Alignment.Center
-                    ) {
-                        Text(
-                            text = "Day",
-                            fontSize = 13.sp,
-                            fontWeight = FontWeight.Bold,
-                            color = if (uiState.viewMode == ScheduleViewMode.DAY) Color.White else DarkMaroonText
-                        )
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(14.dp))
-
-            // 7-Day Calendar Strip
-            Card(
-                shape = RoundedCornerShape(16.dp),
-                colors = CardDefaults.cardColors(containerColor = Color(0xFFF5EFE8)),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Row(
-                    modifier = Modifier
-                        .fillMaxWidth()
-                        .padding(vertical = 8.dp, horizontal = 4.dp),
-                    horizontalArrangement = Arrangement.SpaceAround,
-                    verticalAlignment = Alignment.CenterVertically
-                ) {
-                    uiState.days.forEach { day ->
-                        val isSelected = day.isSelected
-                        val containerBg = if (isSelected) DeepPlum else Color.Transparent
-                        val textColor = if (isSelected) Color.White else DarkMaroonText
-
-                        Column(
-                            horizontalAlignment = Alignment.CenterHorizontally,
-                            modifier = Modifier
-                                .clip(RoundedCornerShape(12.dp))
-                                .background(containerBg)
-                                .clickable { onDaySelect(day.dayNumber) }
-                                .padding(horizontal = 10.dp, vertical = 8.dp)
-                        ) {
-                            Text(
-                                text = day.dayName,
-                                fontSize = 12.sp,
-                                fontWeight = FontWeight.SemiBold,
-                                color = textColor
-                            )
-                            Spacer(modifier = Modifier.height(4.dp))
-                            Text(
-                                text = day.dayNumber,
-                                fontSize = 14.sp,
-                                fontWeight = FontWeight.Bold,
-                                color = textColor
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Selected Day Banner
-            Row(
-                modifier = Modifier.fillMaxWidth(),
-                horizontalArrangement = Arrangement.SpaceBetween,
-                verticalAlignment = Alignment.CenterVertically
-            ) {
-                Text(
-                    text = uiState.selectedDayText,
-                    fontSize = 15.sp,
-                    fontWeight = FontWeight.Bold,
-                    color = DarkMaroonText
-                )
-
-                Box(
-                    modifier = Modifier
-                        .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
-                        .padding(horizontal = 10.dp, vertical = 4.dp)
-                ) {
-                    Text(
-                        text = uiState.classCountBadge,
-                        fontSize = 11.sp,
-                        fontWeight = FontWeight.SemiBold,
-                        color = DeepPlum
-                    )
-                }
-            }
-
-            Spacer(modifier = Modifier.height(12.dp))
-
-            // Today's Confirmed Class Card
+            // Weekly Schedule Card
             Card(
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
-                modifier = Modifier
-                    .fillMaxWidth()
-                    .clickable { onClassClick() }
+                colors = CardDefaults.cardColors(containerColor = CardBackground),
+                border = BorderStroke(1.dp, CardBorder),
+                modifier = Modifier.fillMaxWidth()
             ) {
                 Column(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(20.dp)
+                        .padding(18.dp)
                 ) {
-                    Text(
-                        text = uiState.todayBadge,
-                        fontSize = 10.sp,
-                        fontWeight = FontWeight.Bold,
-                        letterSpacing = 0.8.sp,
-                        color = DeepPlum
-                    )
-
-                    Spacer(modifier = Modifier.height(10.dp))
-
-                    Text(
-                        text = uiState.className,
-                        fontFamily = FontFamily.Serif,
-                        fontSize = 24.sp,
-                        color = DarkMaroonText
-                    )
-
-                    Spacer(modifier = Modifier.height(4.dp))
-
-                    Text(
-                        text = uiState.classTime,
-                        fontSize = 14.sp,
-                        fontWeight = FontWeight.Bold,
-                        color = DarkMaroonText
-                    )
-
-                    Spacer(modifier = Modifier.height(2.dp))
-
-                    Text(
-                        text = uiState.classStudioAndInstructor,
-                        fontSize = 13.sp,
-                        color = MutedBodyText
-                    )
-
-                    Spacer(modifier = Modifier.height(16.dp))
-
+                    // Tuesday
                     Row(
                         modifier = Modifier.fillMaxWidth(),
                         horizontalArrangement = Arrangement.SpaceBetween,
@@ -436,26 +222,111 @@ fun ClassScheduleContent(
                     ) {
                         Column {
                             Text(
-                                text = uiState.classTopic,
-                                fontSize = 14.sp,
+                                text = "Tuesday",
+                                fontSize = 16.sp,
                                 fontWeight = FontWeight.Bold,
                                 color = DarkMaroonText
                             )
                             Spacer(modifier = Modifier.height(2.dp))
                             Text(
-                                text = uiState.classNotebookNote,
-                                fontSize = 12.sp,
-                                color = MutedBodyText
+                                text = "6:00 PM – 7:00 PM",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DeepPlum
                             )
                         }
 
-                        // Chevron Arrow
-                        Canvas(modifier = Modifier.size(14.dp)) {
-                            val w = size.width
-                            val h = size.height
-                            val stroke = 1.8.dp.toPx()
-                            drawLine(color = DeepPlum, start = Offset(0f, 0f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                            drawLine(color = DeepPlum, start = Offset(w, h / 2), end = Offset(0f, h), strokeWidth = stroke, cap = StrokeCap.Round)
+                        Box(
+                            modifier = Modifier
+                                .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Class 1",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DeepPlum
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    HorizontalDivider(color = CardBorder, thickness = 1.dp)
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Thursday
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Thursday",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "6:00 PM – 7:00 PM",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DeepPlum
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Class 2",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DeepPlum
+                            )
+                        }
+                    }
+
+                    Spacer(modifier = Modifier.height(14.dp))
+                    HorizontalDivider(color = CardBorder, thickness = 1.dp)
+                    Spacer(modifier = Modifier.height(14.dp))
+
+                    // Sunday
+                    Row(
+                        modifier = Modifier.fillMaxWidth(),
+                        horizontalArrangement = Arrangement.SpaceBetween,
+                        verticalAlignment = Alignment.CenterVertically
+                    ) {
+                        Column {
+                            Text(
+                                text = "Sunday",
+                                fontSize = 16.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                            Spacer(modifier = Modifier.height(2.dp))
+                            Text(
+                                text = "10:00 AM – 12:00 PM",
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.SemiBold,
+                                color = DeepPlum
+                            )
+                        }
+
+                        Box(
+                            modifier = Modifier
+                                .background(SoftLavenderBadge, shape = RoundedCornerShape(12.dp))
+                                .padding(horizontal = 10.dp, vertical = 4.dp)
+                        ) {
+                            Text(
+                                text = "Special Practice",
+                                fontSize = 11.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DeepPlum
+                            )
                         }
                     }
                 }
@@ -463,9 +334,9 @@ fun ClassScheduleContent(
 
             Spacer(modifier = Modifier.height(20.dp))
 
-            // "Coming up" Section
+            // Location Section
             Text(
-                text = "Coming up",
+                text = "Location",
                 fontFamily = FontFamily.Serif,
                 fontSize = 22.sp,
                 color = DarkMaroonText
@@ -475,105 +346,127 @@ fun ClassScheduleContent(
 
             Card(
                 shape = RoundedCornerShape(20.dp),
-                colors = CardDefaults.cardColors(containerColor = CardBackground),
-                border = BorderStroke(1.dp, CardBorder),
-                modifier = Modifier.fillMaxWidth()
-            ) {
-                Column(modifier = Modifier.fillMaxWidth()) {
-                    uiState.upcomingClasses.forEachIndexed { index, item ->
-                        Row(
-                            modifier = Modifier
-                                .fillMaxWidth()
-                                .clickable { onClassClick() }
-                                .padding(16.dp),
-                            horizontalArrangement = Arrangement.SpaceBetween,
-                            verticalAlignment = Alignment.CenterVertically
-                        ) {
-                            Column {
-                                Text(
-                                    text = item.dateAndTime,
-                                    fontSize = 14.sp,
-                                    fontWeight = FontWeight.Bold,
-                                    color = DarkMaroonText
-                                )
-                                Spacer(modifier = Modifier.height(2.dp))
-                                Text(
-                                    text = item.description,
-                                    fontSize = 12.sp,
-                                    color = MutedBodyText
-                                )
-                            }
-
-                            Canvas(modifier = Modifier.size(12.dp)) {
-                                val w = size.width
-                                val h = size.height
-                                val stroke = 1.5.dp.toPx()
-                                drawLine(color = DeepPlum, start = Offset(0f, 0f), end = Offset(w, h / 2), strokeWidth = stroke, cap = StrokeCap.Round)
-                                drawLine(color = DeepPlum, start = Offset(w, h / 2), end = Offset(0f, h), strokeWidth = stroke, cap = StrokeCap.Round)
-                            }
-                        }
-
-                        if (index < uiState.upcomingClasses.size - 1) {
-                            HorizontalDivider(
-                                color = CardBorder,
-                                thickness = 1.dp,
-                                modifier = Modifier.padding(horizontal = 16.dp)
-                            )
-                        }
-                    }
-                }
-            }
-
-            Spacer(modifier = Modifier.height(16.dp))
-
-            // Schedule Notice Box
-            Card(
-                shape = RoundedCornerShape(16.dp),
                 colors = CardDefaults.cardColors(containerColor = SoftLavenderBadge),
                 modifier = Modifier.fillMaxWidth()
             ) {
                 Row(
                     modifier = Modifier
                         .fillMaxWidth()
-                        .padding(14.dp),
-                    verticalAlignment = Alignment.CenterVertically
+                        .padding(18.dp),
+                    verticalAlignment = Alignment.Top
                 ) {
                     Box(
                         modifier = Modifier
-                            .size(28.dp)
+                            .size(36.dp)
                             .clip(CircleShape)
                             .background(CardBackground),
                         contentAlignment = Alignment.Center
                     ) {
-                        // Calendar Icon
-                        Canvas(modifier = Modifier.size(14.dp)) {
+                        // Pin Icon
+                        Canvas(modifier = Modifier.size(18.dp)) {
                             val w = size.width
                             val h = size.height
                             drawPath(
                                 path = Path().apply {
-                                    addRoundRect(
-                                        RoundRect(
-                                            rect = Rect(0f, h * 0.2f, w, h),
-                                            cornerRadius = CornerRadius(4f, 4f)
-                                        )
-                                    )
+                                    moveTo(w * 0.5f, h)
+                                    cubicTo(0f, h * 0.6f, 0f, h * 0.2f, w * 0.5f, 0f)
+                                    cubicTo(w, h * 0.2f, w, h * 0.6f, w * 0.5f, h)
                                 },
                                 color = DeepPlum,
                                 style = Stroke(width = 1.5.dp.toPx())
                             )
-                            drawLine(color = DeepPlum, start = Offset(w * 0.3f, 0f), end = Offset(w * 0.3f, h * 0.3f), strokeWidth = 1.5.dp.toPx())
-                            drawLine(color = DeepPlum, start = Offset(w * 0.7f, 0f), end = Offset(w * 0.7f, h * 0.3f), strokeWidth = 1.5.dp.toPx())
+                            drawCircle(color = DeepPlum, radius = 2.5f, center = Offset(w * 0.5f, h * 0.35f))
                         }
                     }
 
-                    Spacer(modifier = Modifier.width(10.dp))
+                    Spacer(modifier = Modifier.width(12.dp))
 
-                    Text(
-                        text = uiState.scheduleNotice,
-                        fontSize = 12.sp,
-                        lineHeight = 17.sp,
-                        color = DeepPlum
-                    )
+                    Column(modifier = Modifier.weight(1f)) {
+                        Text(
+                            text = "Sri Kanchi Shethira Kala Mandir - Studio 1",
+                            fontSize = 15.sp,
+                            fontWeight = FontWeight.Bold,
+                            color = DarkMaroonText
+                        )
+
+                        Spacer(modifier = Modifier.height(4.dp))
+
+                        Text(
+                            text = "44A, Villakadi Koil Street, Kanchipuram",
+                            fontSize = 13.sp,
+                            lineHeight = 18.sp,
+                            color = MutedBodyText
+                        )
+                    }
+                }
+            }
+
+            Spacer(modifier = Modifier.height(20.dp))
+
+            // "Things to bring" Section
+            Text(
+                text = "Things to bring",
+                fontFamily = FontFamily.Serif,
+                fontSize = 22.sp,
+                color = DarkMaroonText
+            )
+
+            Spacer(modifier = Modifier.height(12.dp))
+
+            Card(
+                shape = RoundedCornerShape(20.dp),
+                colors = CardDefaults.cardColors(containerColor = Color(0xFFF3ECE5)),
+                modifier = Modifier.fillMaxWidth()
+            ) {
+                Column(
+                    modifier = Modifier
+                        .fillMaxWidth()
+                        .padding(18.dp)
+                ) {
+                    uiState.checklistItems.forEachIndexed { index, item ->
+                        Row(
+                            verticalAlignment = Alignment.CenterVertically,
+                            modifier = Modifier
+                                .fillMaxWidth()
+                                .clickable { onToggleCheckItem(index) }
+                                .padding(vertical = 6.dp)
+                        ) {
+                            Canvas(modifier = Modifier.size(20.dp)) {
+                                val r = size.width / 2
+                                if (item.isChecked) {
+                                    drawCircle(color = Color(0xFF2E7D32), radius = r)
+                                    drawPath(
+                                        path = Path().apply {
+                                            moveTo(r * 0.5f, r)
+                                            lineTo(r * 0.85f, r * 1.35f)
+                                            lineTo(r * 1.5f, r * 0.65f)
+                                        },
+                                        color = Color.White,
+                                        style = Stroke(width = 1.8.dp.toPx(), cap = StrokeCap.Round)
+                                    )
+                                } else {
+                                    drawCircle(color = CardBorder, radius = r, style = Stroke(width = 1.5.dp.toPx()))
+                                }
+                            }
+
+                            Spacer(modifier = Modifier.width(12.dp))
+
+                            Text(
+                                text = item.title,
+                                fontSize = 14.sp,
+                                fontWeight = FontWeight.Bold,
+                                color = DarkMaroonText
+                            )
+                        }
+
+                        if (index < uiState.checklistItems.size - 1) {
+                            HorizontalDivider(
+                                color = CardBorder,
+                                thickness = 1.dp,
+                                modifier = Modifier.padding(vertical = 4.dp)
+                            )
+                        }
+                    }
                 }
             }
 
@@ -588,10 +481,8 @@ fun ClassScheduleScreenPreview() {
     NritahubTheme {
         ClassScheduleContent(
             uiState = ClassScheduleUiState(),
-            onViewModeChange = {},
-            onDaySelect = {},
-            onTabSelect = {},
-            onClassClick = {}
+            onToggleCheckItem = {},
+            onTabSelect = {}
         )
     }
 }
